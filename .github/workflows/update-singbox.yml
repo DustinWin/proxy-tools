@@ -33,7 +33,7 @@ jobs:
       puernya_time: ${{ steps.puernya.outputs.puernya_time }}
     steps:
       - name: Checkout `building`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: PuerNya/sing-box
           ref: building
@@ -90,7 +90,7 @@ jobs:
       puernya_VERSION: ${{ needs.puernya.outputs.puernya_version }}
     steps:
       - name: Checkout `building`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: PuerNya/sing-box
           ref: building
@@ -165,7 +165,7 @@ jobs:
       release_VERSION: ${{ needs.release.outputs.release_version }}
     steps:
       - name: Checkout `main`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: SagerNet/sing-box
           ref: main
@@ -237,7 +237,7 @@ jobs:
       dev_VERSION: ${{ needs.dev.outputs.dev_version }}
     steps:
       - name: Checkout `dev`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: SagerNet/sing-box
           ref: dev
