@@ -75,7 +75,7 @@ jobs:
       meta_VERSION: ${{ needs.meta.outputs.meta_version }}
     steps:
       - name: Checkout `Meta`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MetaCubeX/mihomo
           ref: Meta
@@ -153,7 +153,7 @@ jobs:
       alpha_VERSION: ${{ needs.alpha.outputs.alpha_version }}
     steps:
       - name: Checkout `Alpha`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MetaCubeX/mihomo
           ref: Alpha

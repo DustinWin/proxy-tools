@@ -74,7 +74,7 @@ jobs:
       release_VERSION: ${{ needs.release.outputs.release_version }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: AdguardTeam/AdGuardHome
 
@@ -149,7 +149,7 @@ jobs:
       beta_VERSION: ${{ needs.beta.outputs.beta_version }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: AdguardTeam/AdGuardHome
 
