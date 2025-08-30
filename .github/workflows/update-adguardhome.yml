@@ -30,7 +30,6 @@ jobs:
         shell: bash
 
       - name: Compare `AdGuard Home Release` versions with current release
-        id: compare
         run: |
           current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
           archs=(
@@ -47,9 +46,9 @@ jobs:
               echo "$name 版本不同，需要更新"
               eval "$var_name=false"
             fi
+            eval "value=\$$name"
+            echo "$var_name=$value" >> ${GITHUB_ENV}
           done
-          eval "value=\$$name"
-          echo "$var_name=$value" >> ${GITHUB_ENV}
 
       - name: Download `AdGuard Home Release` files
         if: env.AdGuard_Home_Release_skip_update != 'true'
