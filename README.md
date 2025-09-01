@@ -14,10 +14,15 @@
 
 # 二、 使用方法
 ## 1. 导入内核（以 [ShellCrash](https://github.com/juewuy/ShellCrash) 导入内核为例）
-**mihomo 内核和 sing-box 内核 Linux 版下载链接后缀和 CPU 架构对应关系如下表：**
-|CPU 架构|AMD64|AMD64v3|ARMv5|ARMv6|ARMv7|ARMv8&ARM64&AArch64|mips-softfloat|mipsle-hardfloat|mipsle-softfloat|
+**mihomo 内核 Linux 版下载链接后缀和 CPU 架构对应关系如下表：**
+|CPU 架构|AMD64v1|AMD64v3|ARMv5|ARMv6|ARMv7|ARMv8&ARM64&AArch64|mips-softfloat|mipsle-softfloat|mipsle-hardfloat|
 |-----|-----|-----|-----|-----|-----|:---:|-----|-----|-----|
-|**链接后缀**|`amd64`|`amd64v3`|`armv5`|`armv6`|`armv7`|`armv8`|`mips-softfloat`|`mipsle-hardfloat`|`mipsle-softfloat`|
+|**链接后缀**|`amd64v1`|`amd64v3`|`armv5`|`armv6`|`armv7`|`armv8`|`mips-softfloat`|`mipsle-softfloat`|`mipsle-hardfloat`|
+
+**sing-box 内核 Linux 版下载链接后缀和 CPU 架构对应关系如下表：**
+|CPU 架构|AMD64|ARMv5|ARMv6|ARMv7|ARMv8&ARM64&AArch64|mips-softfloat|mipsle-softfloat|
+|-----|-----|-----|-----|-----|:---:|-----|-----|
+|**链接后缀**|`amd64`|`armv5`|`armv6`|`armv7`|`armv8`|`mips-softfloat`|`mipsle-softfloat`|
 
 <details>
 <summary>① 首次导入</summary>
