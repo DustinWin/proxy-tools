@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup `Go`
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
@@ -109,7 +109,7 @@ jobs:
         run: sed -i 's/sniffHosts/sniffHost/' ./experimental/clashapi/trafficontrol/tracker.go
 
       - name: Setup `Go`
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
