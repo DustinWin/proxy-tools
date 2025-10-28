@@ -118,7 +118,7 @@ jobs:
         run: go build -v -trimpath -ldflags "-checklinkname=0 -X 'github.com/sagernet/sing-box/constant.Version=${puernya_VERSION}' -s -w -buildid=" -tags "${puernya_TAGS}" ./cmd/sing-box
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sing-box-puernya-${{ matrix.name }}
           path: sing-box*
@@ -137,7 +137,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download files from workspace
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: ./tmp-puernya/
 
