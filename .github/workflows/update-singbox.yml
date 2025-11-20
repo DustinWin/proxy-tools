@@ -34,7 +34,7 @@ jobs:
       puernya_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
       - name: Checkout `building`
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: PuerNya/sing-box
           ref: building
@@ -100,7 +100,7 @@ jobs:
       puernya_TAGS: ${{ needs.puernya.outputs.puernya_tags }}
     steps:
       - name: Checkout `building`
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: PuerNya/sing-box
           ref: building
@@ -134,7 +134,7 @@ jobs:
       puernya_TIME: ${{ needs.puernya.outputs.puernya_time }}
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download files from workspace
         uses: actions/download-artifact@v6
