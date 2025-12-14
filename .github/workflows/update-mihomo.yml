@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set variables
         run: |
@@ -55,8 +55,8 @@ jobs:
         run: |
           # Linux
           mkdir -p ./tmp-meta/ ./mihomo/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-hardfloat mipsle-softfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-hardfloat mipsle-softfloat)
+          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
           for i in "${!linux_old_name[@]}"; do
             curl -L "${download_url}/${meta_version}/mihomo-linux-${linux_old_name[i]}-${meta_version}.gz" | gunzip -c > ./tmp-meta/CrashCore
             chmod +x ./tmp-meta/CrashCore
@@ -79,8 +79,8 @@ jobs:
         run: |
           # Linux
           mkdir -p ./tmp-alpha/ ./mihomo/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-hardfloat mipsle-softfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-hardfloat mipsle-softfloat)
+          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
           for i in "${!linux_old_name[@]}"; do
             curl -L "${download_url}/Prerelease-Alpha/mihomo-linux-${linux_old_name[i]}-${alpha_version}.gz" | gunzip -c > ./tmp-alpha/CrashCore
             chmod +x ./tmp-alpha/CrashCore
