@@ -456,24 +456,22 @@ jobs:
         run: |
           # Linux
           mkdir -p ./sing-box/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          for i in "${!linux_old_name[@]}"; do
-            mv -f "./tmp/sing-box-ref1nd-main-linux-${linux_old_name[i]}/sing-box" ./tmp/CrashCore
+          linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          for i in "${!linux_archs[@]}"; do
+            mv -f "./tmp/sing-box-ref1nd-main-linux-${linux_archs[i]}/sing-box" ./tmp/CrashCore
             # Compress cores by `tar`
             chmod +x ./tmp/CrashCore
-            tar --no-same-owner -czf "./sing-box/sing-box-ref1nd-main-linux-${linux_new_name[i]}.tar.gz" -C ./tmp/ CrashCore
+            tar --no-same-owner -czf "./sing-box/sing-box-ref1nd-main-linux-${linux_archs[i]}.tar.gz" -C ./tmp/ CrashCore
 
             # Ready for compress cores by `UPX`
-            mv -f ./tmp/CrashCore ./sing-box/sing-box-ref1nd-main-linux-${linux_new_name[i]}.upx
-            chmod +x ./sing-box/sing-box-ref1nd-main-linux-${linux_new_name[i]}.upx
+            mv -f ./tmp/CrashCore ./sing-box/sing-box-ref1nd-main-linux-${linux_archs[i]}.upx
+            chmod +x ./sing-box/sing-box-ref1nd-main-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          windows_old_name=(amd64-v1 amd64-v3 arm64)
-          windows_new_name=(amd64v1 amd64v3 arm64)
-          for i in "${!windows_old_name[@]}"; do
-            mv -f "./tmp/sing-box-ref1nd-main-windows-${windows_old_name[i]}/sing-box.exe" "./sing-box/sing-box-ref1nd-main-windows-${windows_new_name[i]}.exe"
+          windows_archs=(amd64-v1 amd64-v3 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mv -f "./tmp/sing-box-ref1nd-main-windows-${windows_archs[j]}/sing-box.exe" "./sing-box/sing-box-ref1nd-main-windows-${windows_archs[j]}.exe"
           done
 
       - name: Move files and zip `sing-box reF1nd-dev` cores by `tar`
@@ -481,25 +479,23 @@ jobs:
         run: |
           # Linux
           mkdir -p ./sing-box/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          for i in "${!linux_old_name[@]}"; do
-            mv -f "./tmp/sing-box-ref1nd-dev-linux-${linux_old_name[i]}/sing-box" ./tmp/CrashCore
+          linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          for i in "${!linux_archs[@]}"; do
+            mv -f "./tmp/sing-box-ref1nd-dev-linux-${linux_archs[i]}/sing-box" ./tmp/CrashCore
 
             # Compress cores by `tar`
             chmod +x ./tmp/CrashCore
-            tar --no-same-owner -czf "./sing-box/sing-box-ref1nd-dev-linux-${linux_new_name[i]}.tar.gz" -C ./tmp/ CrashCore
+            tar --no-same-owner -czf "./sing-box/sing-box-ref1nd-dev-linux-${linux_archs[i]}.tar.gz" -C ./tmp/ CrashCore
 
             # Ready for compress cores by `UPX`
-            mv -f ./tmp/CrashCore ./sing-box/sing-box-ref1nd-dev-linux-${linux_new_name[i]}.upx
-            chmod +x ./sing-box/sing-box-ref1nd-dev-linux-${linux_new_name[i]}.upx
+            mv -f ./tmp/CrashCore ./sing-box/sing-box-ref1nd-dev-linux-${linux_archs[i]}.upx
+            chmod +x ./sing-box/sing-box-ref1nd-dev-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          windows_old_name=(amd64-v1 amd64-v3 arm64)
-          windows_new_name=(amd64v1 amd64v3 arm64)
-          for i in "${!windows_old_name[@]}"; do
-            mv -f "./tmp/sing-box-ref1nd-dev-windows-${windows_old_name[i]}/sing-box.exe" "./sing-box/sing-box-ref1nd-dev-windows-${windows_new_name[i]}.exe"
+          windows_archs=(amd64-v1 amd64-v3 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mv -f "./tmp/sing-box-ref1nd-dev-windows-${windows_archs[j]}/sing-box.exe" "./sing-box/sing-box-ref1nd-dev-windows-${windows_archs[j]}.exe"
           done
 
       - name: Move files and zip `sing-box Release` cores by `tar`
@@ -507,24 +503,22 @@ jobs:
         run: |
           # Linux
           mkdir -p ./sing-box/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          for i in "${!linux_old_name[@]}"; do
-            mv -f "./tmp/sing-box-release-linux-${linux_old_name[i]}/sing-box" ./tmp/CrashCore
+          linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          for i in "${!linux_archs[@]}"; do
+            mv -f "./tmp/sing-box-release-linux-${linux_archs[i]}/sing-box" ./tmp/CrashCore
             # Compress cores by `tar`
             chmod +x ./tmp/CrashCore
-            tar --no-same-owner -czf "./sing-box/sing-box-release-linux-${linux_new_name[i]}.tar.gz" -C ./tmp/ CrashCore
+            tar --no-same-owner -czf "./sing-box/sing-box-release-linux-${linux_archs[i]}.tar.gz" -C ./tmp/ CrashCore
 
             # Ready for compress cores by `UPX`
-            mv -f ./tmp/CrashCore ./sing-box/sing-box-release-linux-${linux_new_name[i]}.upx
-            chmod +x ./sing-box/sing-box-release-linux-${linux_new_name[i]}.upx
+            mv -f ./tmp/CrashCore ./sing-box/sing-box-release-linux-${linux_archs[i]}.upx
+            chmod +x ./sing-box/sing-box-release-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          windows_old_name=(amd64-v1 amd64-v3 arm64)
-          windows_new_name=(amd64v1 amd64v3 arm64)
-          for i in "${!windows_old_name[@]}"; do
-            mv -f "./tmp/sing-box-release-windows-${windows_old_name[i]}/sing-box.exe" "./sing-box/sing-box-release-windows-${windows_new_name[i]}.exe"
+          windows_archs=(amd64-v1 amd64-v3 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mv -f "./tmp/sing-box-release-windows-${windows_archs[j]}/sing-box.exe" "./sing-box/sing-box-release-windows-${windows_archs[j]}.exe"
           done
 
       - name: Move files and zip `sing-box Dev` cores by `tar`
@@ -532,24 +526,22 @@ jobs:
         run: |
           # Linux
           mkdir -p ./sing-box/
-          linux_old_name=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          linux_new_name=(amd64v1 amd64v3 armv5 armv6 armv7 armv8 mips-softfloat mipsle-softfloat mipsle-hardfloat)
-          for i in "${!linux_old_name[@]}"; do
-            mv -f "./tmp/sing-box-dev-linux-${linux_old_name[i]}/sing-box" ./tmp/CrashCore
+          linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
+          for i in "${!linux_archs[@]}"; do
+            mv -f "./tmp/sing-box-dev-linux-${linux_archs[i]}/sing-box" ./tmp/CrashCore
             # Compress cores by `tar`
             chmod +x ./tmp/CrashCore
-            tar --no-same-owner -czf "./sing-box/sing-box-dev-linux-${linux_new_name[i]}.tar.gz" -C ./tmp/ CrashCore
+            tar --no-same-owner -czf "./sing-box/sing-box-dev-linux-${linux_archs[i]}.tar.gz" -C ./tmp/ CrashCore
 
             # Ready for compress cores by `UPX`
-            mv -f ./tmp/CrashCore ./sing-box/sing-box-dev-linux-${linux_new_name[i]}.upx
-            chmod +x ./sing-box/sing-box-dev-linux-${linux_new_name[i]}.upx
+            mv -f ./tmp/CrashCore ./sing-box/sing-box-dev-linux-${linux_archs[i]}.upx
+            chmod +x ./sing-box/sing-box-dev-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          windows_old_name=(amd64-v1 amd64-v3 arm64)
-          windows_new_name=(amd64v1 amd64v3 arm64)
-          for i in "${!windows_old_name[@]}"; do
-            mv -f "./tmp/sing-box-dev-windows-${windows_old_name[i]}/sing-box.exe" "./sing-box/sing-box-dev-windows-${windows_new_name[i]}.exe"
+          windows_archs=(amd64-v1 amd64-v3 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mv -f "./tmp/sing-box-dev-windows-${windows_archs[j]}/sing-box.exe" "./sing-box/sing-box-dev-windows-${windows_archs[j]}.exe"
           done
 
       - name: Setup `UPX` and compress `sing-box` files

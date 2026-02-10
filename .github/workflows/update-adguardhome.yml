@@ -55,22 +55,21 @@ jobs:
         run: |
           # Linux
           mkdir -p ./AdGuardHome/
-          old_name=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
-          new_name=(amd64 armv5 armv6 armv7 armv8 mips_softfloat mipsle_softfloat)
-          for i in "${!old_name[@]}"; do
-            mkdir -p "./tmp-release/release_linux_${old_name[i]}"
-            curl -L "${download_url}/${release_version}/AdGuardHome_linux_${old_name[i]}.tar.gz" | tar -zx -C "./tmp-release/release_linux_${old_name[i]}"
-            mv -f "./tmp-release/release_linux_${old_name[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_release_linux_${new_name[i]}"
+          linux_archs=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
+          for i in "${!linux_archs[@]}"; do
+            mkdir -p "./tmp-release/release_linux_${linux_archs[i]}"
+            curl -L "${download_url}/${release_version}/AdGuardHome_linux_${linux_archs[i]}.tar.gz" | tar -zx -C "./tmp-release/release_linux_${linux_archs[i]}"
+            mv -f "./tmp-release/release_linux_${linux_archs[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_release_linux_${linux_archs[i]}"
           done
           chmod +x ./AdGuardHome/AdGuardHome_release_linux_*
 
           # Windows
-          archs=(amd64 arm64)
-          for arch in "${archs[@]}"; do
-            mkdir -p "./tmp-release/release_windows_${arch}/"
-            wget -P "./tmp-release/release_windows_${arch}/" "${download_url}/${release_version}/AdGuardHome_windows_${arch}.zip"
-            unzip -o "./tmp-release/release_windows_${arch}/AdGuardHome_windows_${arch}.zip" -d "./tmp-release/release_windows_${arch}/"
-            mv -f "./tmp-release/release_windows_${arch}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_release_windows_${arch}.exe"
+          windows_archs=(amd64 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mkdir -p "./tmp-release/release_windows_${windows_archs[j]}/"
+            wget -P "./tmp-release/release_windows_${windows_archs[j]}/" "${download_url}/${release_version}/AdGuardHome_windows_${windows_archs[j]}.zip"
+            unzip -o "./tmp-release/release_windows_${windows_archs[j]}/AdGuardHome_windows_${windows_archs[j]}.zip" -d "./tmp-release/release_windows_${windows_archs[j]}/"
+            mv -f "./tmp-release/release_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_release_windows_${windows_archs[j]}.exe"
           done
           rm -rf ./tmp-release*
 
@@ -79,22 +78,21 @@ jobs:
         run: |
           # Linux
           mkdir -p ./AdGuardHome/
-          old_name=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
-          new_name=(amd64 armv5 armv6 armv7 armv8 mips_softfloat mipsle_softfloat)
-          for i in "${!old_name[@]}"; do
-            mkdir -p "./tmp-beta/beta_linux_${old_name[i]}"
-            curl -L "${download_url}/${beta_version}/AdGuardHome_linux_${old_name[i]}.tar.gz" | tar -zx -C "./tmp-beta/beta_linux_${old_name[i]}"
-            mv -f "./tmp-beta/beta_linux_${old_name[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_beta_linux_${new_name[i]}"
+          linux_archs=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
+          for i in "${!linux_archs[@]}"; do
+            mkdir -p "./tmp-beta/beta_linux_${linux_archs[i]}"
+            curl -L "${download_url}/${beta_version}/AdGuardHome_linux_${linux_archs[i]}.tar.gz" | tar -zx -C "./tmp-beta/beta_linux_${linux_archs[i]}"
+            mv -f "./tmp-beta/beta_linux_${linux_archs[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_beta_linux_${linux_archs[i]}"
           done
           chmod +x ./AdGuardHome/AdGuardHome_beta_linux_*
 
           # Windows
-          archs=(amd64 arm64)
-          for arch in "${archs[@]}"; do
-            mkdir -p "./tmp-beta/beta_windows_${arch}/"
-            wget -P "./tmp-beta/beta_windows_${arch}/" "${download_url}/${beta_version}/AdGuardHome_windows_${arch}.zip"
-            unzip -o "./tmp-beta/beta_windows_${arch}/AdGuardHome_windows_${arch}.zip" -d "./tmp-beta/beta_windows_${arch}/"
-            mv -f "./tmp-beta/beta_windows_${arch}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_beta_windows_${arch}.exe"
+          windows_archs=(amd64 arm64)
+          for j in "${!windows_archs[@]}"; do
+            mkdir -p "./tmp-beta/beta_windows_${windows_archs[j]}/"
+            wget -P "./tmp-beta/beta_windows_${windows_archs[j]}/" "${download_url}/${beta_version}/AdGuardHome_windows_${windows_archs[j]}.zip"
+            unzip -o "./tmp-beta/beta_windows_${windows_archs[j]}/AdGuardHome_windows_${windows_archs[j]}.zip" -d "./tmp-beta/beta_windows_${windows_archs[j]}/"
+            mv -f "./tmp-beta/beta_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_beta_windows_${windows_archs[j]}.exe"
           done
           rm -rf ./tmp-beta*
 
