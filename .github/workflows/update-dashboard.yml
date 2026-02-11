@@ -22,8 +22,6 @@ jobs:
 
       - name: Set variables
         run: |
-          echo "yacd_version=$(curl -sSL https://api.github.com/repos/haishanh/yacd/releases/latest | jq -r '.tag_name')" >> ${GITHUB_ENV}
-          echo "yacd_time=$(curl -sSL https://api.github.com/repos/haishanh/yacd/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
           echo "yacd_meta_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/Yacd-meta/releases/latest | jq -r '.tag_name')" >> ${GITHUB_ENV}
           echo "yacd_meta_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/Yacd-meta/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
           echo "metacubexd_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/metacubexd/releases/latest | jq -r '.tag_name')" >> ${GITHUB_ENV}
@@ -36,7 +34,6 @@ jobs:
         run: |
           current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/Dashboard" | jq -r '.body // ""')
           archs=(
-            "yacd|${yacd_version}|${yacd_time}"
             "Yacd-meta|${yacd_meta_version}|${yacd_meta_time}"
             "metacubexd|${metacubexd_version}|${metacubexd_time}"
             "zashboard|${zashboard_version}|${zashboard_time}"
@@ -54,15 +51,6 @@ jobs:
             eval "value=\$${var_name}"
             echo "${var_name}=${value}" >> ${GITHUB_ENV}
           done
-
-      - name: Download and compress `yacd` dashboard
-        if: ${{ env.yacd_skip_release != 'true' }}
-        run: |
-          mkdir -p ./Dashboard/ ./tmp/yacd/
-          curl -o ./tmp/yacd/gh-pages.zip -L https://github.com/haishanh/yacd/archive/gh-pages.zip
-          unzip -o ./tmp/yacd/gh-pages.zip -d ./tmp/yacd/
-          cd ./tmp/yacd/yacd-gh-pages/
-          tar -czf ../../../Dashboard/yacd.tar.gz *
 
       - name: Download and compress `Yacd-meta` dashboard
         if: ${{ env.Yacd_meta_skip_release != 'true' }}
@@ -110,7 +98,6 @@ jobs:
           tag: Dashboard
           overwrite: true
           body: |
-            更新 [yacd 面板](https://github.com/haishanh/yacd)至 ${{ env.yacd_version }}，发布于 ${{ env.yacd_time }}
             更新 [Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)至 ${{ env.yacd_meta_version }}，发布于 ${{ env.yacd_meta_time }}
             更新 [metacubexd 面板](https://github.com/MetaCubeX/metacubexd)至 ${{ env.metacubexd_version }}，发布于 ${{ env.metacubexd_time }}
             更新 [zashboard 面板](https://github.com/Zephyruso/zashboard)至 ${{ env.zashboard_version }}，发布于 ${{ env.zashboard_time }}
