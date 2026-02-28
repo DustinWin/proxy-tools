@@ -3,7 +3,7 @@
 每天凌晨（北京时间 UTC+8）自动构建生成：
 1. mihomo [Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)和 [Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)内核
 2. sing-box [Release 版](https://github.com/SagerNet/sing-box/tree/main)、[Dev 版](https://github.com/SagerNet/sing-box/tree/dev)、[reF1nd-main 版](https://github.com/reF1nd/sing-box/tree/reF1nd-main)和 [reF1nd-dev 版](https://github.com/reF1nd/sing-box/tree/reF1nd-dev)（支持[提供者](https://sing-boxr.dustinwin.us.kg/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
-3. Dashboard 面板：[yacd 面板](https://github.com/haishanh/yacd)、[Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd 面板](https://github.com/MetaCubeX/metacubexd)和 [zashboard 面板](https://github.com/Zephyruso/zashboard)
+3. Dashboard 面板：[Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd 面板](https://github.com/MetaCubeX/metacubexd)和 [zashboard 面板](https://github.com/Zephyruso/zashboard)
 4. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
 
 **注：**
@@ -58,7 +58,6 @@ curl -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinW
 **Dashboard 面板对应文件名和网址关系如下表：**
 |面板名称|文件名|网址|
 |-----|-----|-----|
-|yacd 面板|`yacd.tar.gz`|<https://yacd.haishan.me>|
 |Yacd-meta 面板|`Yacd-meta.tar.gz`|<https://yacd.metacubex.one>|
 |metacubexd 面板|`metacubexd.tar.gz`|<https://metacubex.github.io/metacubexd/>|
 |zashboard 面板|`zashboard.tar.gz`|<https://board.zash.run.place>|
