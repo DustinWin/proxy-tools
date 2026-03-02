@@ -106,7 +106,7 @@ jobs:
 
       - name: Setup `UPX` and compress `mihomo` files
         if: ${{ env.mihomo_Meta_skip_update != 'true' || env.mihomo_Alpha_skip_update != 'true' }}
-        uses: crazy-max/ghaction-upx@v3
+        uses: crazy-max/ghaction-upx@v4
         with:
           version: latest
           files: ./mihomo/*.upx

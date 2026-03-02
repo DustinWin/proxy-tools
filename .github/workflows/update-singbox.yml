@@ -546,7 +546,7 @@ jobs:
 
       - name: Setup `UPX` and compress `sing-box` files
         if: ${{ env.ref1nd_main_skip_update != 'true' || env.ref1nd_dev_skip_update != 'true' || env.singbox_release_skip_update != 'true' || env.singbox_dev_skip_update != 'true' }}
-        uses: crazy-max/ghaction-upx@v3
+        uses: crazy-max/ghaction-upx@v4
         with:
           version: latest
           files: ./sing-box/*.upx
