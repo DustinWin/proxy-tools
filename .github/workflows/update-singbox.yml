@@ -366,7 +366,7 @@ jobs:
 
       - name: Update version
         run: |
-          go run -v ./cmd/internal/update_android_version --ci --nightly
+          go run -v ./cmd/internal/update_android_version --ci
 
       - name: Decode Keystore
         run: |
