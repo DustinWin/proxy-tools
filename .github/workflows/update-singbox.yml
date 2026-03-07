@@ -247,7 +247,7 @@ jobs:
           ndk-version: r29
 
       - name: Setup OpenJDK
-        run: |
+        run: |-
           sudo apt update && sudo apt install -y openjdk-17-jdk-headless
           /usr/lib/jvm/java-17-openjdk-amd64/bin/java --version
 
@@ -255,7 +255,7 @@ jobs:
         run: git tag v${{ needs.ref1nd_stable_version.outputs.ref1nd_stable_version }} -f
 
       - name: Build library
-        run: |
+        run: |-
           make lib_install
           export PATH="$PATH:$(go env GOPATH)/bin"
           make lib_android
@@ -270,11 +270,11 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle') }}
 
       - name: Update version
-        run: |
+        run: |-
           go run -v ./cmd/internal/update_android_version --ci --nightly
 
       - name: Decode Keystore
-        run: |
+        run: |-
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > ./clients/android/app/release.keystore
           sed -i '/fun getProps(propName: String): String {/,/^}/c\
           fun getProps(propName: String): String {\
@@ -289,7 +289,7 @@ jobs:
           }' ./clients/android/app/build.gradle.kts
 
       - name: Build `SFA-reF1nd-Stable` apk
-        run: |
+        run: |-
           mkdir -p ./clients/android/app/libs/
           cp -f  ./*.aar ./clients/android/app/libs/
           cd ./clients/android
@@ -303,7 +303,7 @@ jobs:
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
 
       - name: Prepare upload
-        run: |
+        run: |-
           mkdir -p ./sfa-ref1nd-stable/
           for file in ./clients/android/app/build/outputs/apk/other/release/*.apk; do
             mv -f "${file}" "./sfa-ref1nd-stable/$(basename "${file/SFA-*-reF1nd/SFA-ref1nd-stable}")"
@@ -333,16 +333,16 @@ jobs:
       - name: Setup `Go`
         uses: actions/setup-go@v6
         with:
-          go-version: ~1.25.8
+          go-version: ${{ needs.go.outputs.go_version }}
 
       - name: Setup Android NDK
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r28
+          ndk-version: r29
 
       - name: Setup OpenJDK
-        run: |
+        run: |-
           sudo apt update && sudo apt install -y openjdk-17-jdk-headless
           /usr/lib/jvm/java-17-openjdk-amd64/bin/java --version
 
@@ -350,7 +350,7 @@ jobs:
         run: git tag v${{ needs.ref1nd_test_version.outputs.ref1nd_test_version }} -f
 
       - name: Build library
-        run: |
+        run: |-
           make lib_install
           export PATH="$PATH:$(go env GOPATH)/bin"
           make lib_android
@@ -365,11 +365,11 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle') }}
 
       - name: Update version
-        run: |
-          go run -v ./cmd/internal/update_android_version --ci
+        run: |-
+          go run -v ./cmd/internal/update_android_version --ci --nightly
 
       - name: Decode Keystore
-        run: |
+        run: |-
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > ./clients/android/app/release.keystore
           sed -i '/fun getProps(propName: String): String {/,/^}/c\
           fun getProps(propName: String): String {\
@@ -384,7 +384,7 @@ jobs:
           }' ./clients/android/app/build.gradle.kts
 
       - name: Build `SFA-reF1nd-Test` apk
-        run: |
+        run: |-
           mkdir -p ./clients/android/app/libs/
           cp -f  ./*.aar ./clients/android/app/libs/
           cd ./clients/android
@@ -398,7 +398,7 @@ jobs:
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
 
       - name: Prepare upload
-        run: |
+        run: |-
           mkdir -p ./sfa-ref1nd-test/
           for file in ./clients/android/app/build/outputs/apk/other/release/*.apk; do
             mv -f "${file}" "./sfa-ref1nd-test/$(basename "${file/SFA-*-reF1nd/SFA-ref1nd-test}")"
