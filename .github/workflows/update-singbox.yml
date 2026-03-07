@@ -233,7 +233,7 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-stable
           fetch-depth: 0
-          submodules: 'recursive'
+          submodules: 'stable'
 
       - name: Setup `Go`
         uses: actions/setup-go@v6
@@ -328,7 +328,7 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-testing
           fetch-depth: 0
-          submodules: 'recursive'
+          submodules: 'test'
 
       - name: Setup `Go`
         uses: actions/setup-go@v6
@@ -388,8 +388,7 @@ jobs:
           mkdir -p ./clients/android/app/libs/
           cp -f  ./*.aar ./clients/android/app/libs/
           cd ./clients/android
-          ./gradlew clean
-          ./gradlew :app:assembleOtherRelease --debug
+          ./gradlew :app:assembleOtherRelease
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
