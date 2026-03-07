@@ -382,7 +382,6 @@ jobs:
               }\
               props.getProperty(propName)?.let { return it }\
           }\
-
           return ""\
           }' ./clients/android/app/build.gradle.kts
 
