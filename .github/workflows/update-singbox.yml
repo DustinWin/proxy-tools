@@ -384,7 +384,7 @@ jobs:
           }\
 
           return ""\
-          }\' ./clients/android/app/build.gradle.kts
+          }' ./clients/android/app/build.gradle.kts
 
       - name: Build `SFA-reF1nd-Test` apk
         run: |
@@ -618,6 +618,7 @@ jobs:
       - ref1nd_stable_android
       - ref1nd_test_version
       - ref1nd_test_cross
+      - ref1nd_test_android
       - singbox_stable_version
       - singbox_stable_cross
       - singbox_test_version
