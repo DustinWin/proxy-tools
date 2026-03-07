@@ -233,7 +233,7 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-stable
           fetch-depth: 0
-          submodules: 'stable'
+          submodules: 'recursive'
 
       - name: Setup `Go`
         uses: actions/setup-go@v6
@@ -328,18 +328,18 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-testing
           fetch-depth: 0
-          submodules: 'test'
+          submodules: 'recursive'
 
       - name: Setup `Go`
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ~1.25.8
 
       - name: Setup Android NDK
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r29
+          ndk-version: r28
 
       - name: Setup OpenJDK
         run: |
