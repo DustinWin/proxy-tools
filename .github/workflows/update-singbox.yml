@@ -373,15 +373,18 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > ./clients/android/app/release.keystore
           sed -i '/fun getProps(propName: String): String {/,/^}/c\
           fun getProps(propName: String): String {\
-              System.getenv(propName)?.let { return it }\
-              val propsFile = rootProject.file("local.properties")\
-              if (propsFile.exists()) {\
-                  val props = Properties()\
-                  props.load(FileInputStream(propsFile))\
-                  props.getProperty(propName)?.let { return it }\
+          System.getenv(propName)?.let { return it }\
+          val propsFile = rootProject.file("local.properties")\
+          if (propsFile.exists()) {\
+              val props = Properties()\
+              FileInputStream(propsFile).use { fis ->\
+                  props.load(fis)\
               }\
-              return ""\
-          }' ./clients/android/app/build.gradle.kts
+              props.getProperty(propName)?.let { return it }\
+          }\
+
+          return ""\
+          }\' ./clients/android/app/build.gradle.kts
 
       - name: Build `SFA-reF1nd-Test` apk
         run: |
