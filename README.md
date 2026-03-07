@@ -1,10 +1,11 @@
-# 更新 [mihomo 内核](https://github.com/MetaCubeX/mihomo)、[sing-box 内核](https://github.com/SagerNet/sing-box)、[sing-box reF1nd 版内核](https://github.com/reF1nd/sing-box)、Dashboard 面板和 [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)
+# 更新 [mihomo 内核](https://github.com/MetaCubeX/mihomo)、[sing-box 内核](https://github.com/SagerNet/sing-box)、[sing-box reF1nd 版内核和 Android 安装包](https://github.com/reF1nd/sing-box)、Dashboard 面板和 [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)
 # 一、 说明
 每天凌晨（北京时间 UTC+8）自动构建生成：
 1. mihomo [Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)和 [Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)内核
-2. sing-box [Stable 版](https://github.com/SagerNet/sing-box/tree/stable)、[Test 版](https://github.com/SagerNet/sing-box/tree/testing)、[reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-Stable)和 [reF1nd-Test 版](https://github.com/reF1nd/sing-box/tree/reF1nd-Testing)（支持[提供者](https://sing-boxr.dustinwin.us.kg/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
-3. Dashboard 面板：[Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd 面板](https://github.com/MetaCubeX/metacubexd)和 [zashboard 面板](https://github.com/Zephyruso/zashboard)
-4. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
+2. sing-box [Stable 版](https://github.com/SagerNet/sing-box/tree/stable)和 [Test 版](https://github.com/SagerNet/sing-box/tree/testing)内核
+3. [reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-Stable)和 [reF1nd-Test 版](https://github.com/reF1nd/sing-box/tree/reF1nd-Testing)内核和 Android 安装包（支持[提供者](https://sing-boxr.dustinwin.us.kg/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
+4. Dashboard 面板：[Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd 面板](https://github.com/MetaCubeX/metacubexd)和 [zashboard 面板](https://github.com/Zephyruso/zashboard)
+5. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
 
 **注：**
 - 1. 本教程中的下载链接以 CPU 架构 ARM64 为例，请注意修改链接后缀
