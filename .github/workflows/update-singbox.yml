@@ -388,7 +388,8 @@ jobs:
           mkdir -p ./clients/android/app/libs/
           cp -f  ./*.aar ./clients/android/app/libs/
           cd ./clients/android
-          ./gradlew :app:assembleOtherRelease --stacktrace --info
+          ./gradlew clean
+          ./gradlew :app:assembleOtherRelease --debug
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
