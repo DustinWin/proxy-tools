@@ -388,7 +388,7 @@ jobs:
           mkdir -p ./clients/android/app/libs/
           cp -f  ./*.aar ./clients/android/app/libs/
           cd ./clients/android
-          ./gradlew :app:compileOtherReleaseKotlin --debug
+          ./gradlew :app:compileOtherReleaseKotlin --info
           # ./gradlew :app:assembleOtherRelease
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
