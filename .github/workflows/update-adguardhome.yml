@@ -97,7 +97,7 @@ jobs:
           repository: AdguardTeam/AdGuardHome
 
       - name: Setup `Go`
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
@@ -185,7 +185,7 @@ jobs:
           repository: AdguardTeam/AdGuardHome
 
       - name: Setup `Go`
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
