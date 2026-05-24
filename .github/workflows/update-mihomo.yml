@@ -17,105 +17,282 @@ permissions:
   contents: write
 
 jobs:
-  Update:
+  go:
     runs-on: ubuntu-latest
+    outputs:
+      go_version: ${{ steps.go.outputs.version }}
+    steps:
+      - name: Get `Go` latest version
+        id: go
+        run: |
+          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> ${GITHUB_OUTPUT}
+
+  meta_version:
+    runs-on: ubuntu-latest
+    outputs:
+      meta_version: ${{ steps.version.outputs.meta_version }}
+      meta_linux_tags: ${{ steps.version.outputs.meta_linux_tags }}
+      meta_windows_tags: ${{ steps.version.outputs.meta_windows_tags }}
+      meta_time: ${{ steps.version.outputs.meta_time}}
+      meta_skip_update: ${{ steps.compare.outputs.skip_update }}
+    steps:
+      - name: Get `mihomo Meta` version and time
+        id: version
+        run: |
+          echo "meta_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name' | sed 's/^v//')" >> ${GITHUB_OUTPUT}
+          echo "meta_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_OUTPUT}
+          echo "meta_linux_tags=no_tailscale" >> ${GITHUB_OUTPUT}
+          echo "meta_windows_tags=with_gvisor,no_tailscale" >> ${GITHUB_OUTPUT}
+
+      - name: Compare `mihomo Meta` versions with current release
+        id: compare
+        run: |
+          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
+          arch="mihomo Meta|${{ steps.version.outputs.meta_version }}|${{ steps.version.outputs.meta_time }}"
+          IFS="|" read -r name version time <<< "$arch"
+          if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
+            echo "当前 ${name} 版本已是最新版本 v${version}，无需更新"
+            skip_update=true
+          else
+            echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
+            skip_update=false
+          fi
+          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+
+  meta_cross:
+    runs-on: ubuntu-latest
+    if: ${{ needs.meta_version.outputs.meta_skip_update != 'true' }}
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1 }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3 }
+          - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
+          - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64 }
+          - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
+          - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
+          - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
+          # Windows
+          - { name: windows-amd64-v1, goos: windows, goarch: amd64, goamd64: v1 }
+          - { name: windows-amd64-v3, goos: windows, goarch: amd64, goamd64: v3 }
+          - { name: windows-arm64, goos: windows, goarch: arm64 }
+
+      fail-fast: false
+    needs:
+      - go
+      - meta_version
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      GOAMD64: ${{ matrix.goamd64 }}
+      GOARM: ${{ matrix.goarm }}
+      GOMIPS: ${{ matrix.gomips }}
+      CGO_ENABLED: 0
+      meta_VERSION: ${{ needs.meta_version.outputs.meta_version }}
+      meta_TIME: ${{ needs.meta_version.outputs.meta_time }}
+      meta_linux_TAGS: ${{ needs.meta_version.outputs.meta_linux_tags }}
+      meta_windows_TAGS: ${{ needs.meta_version.outputs.meta_windows_tags }}
+    steps:
+      - name: Checkout `Meta`
+        uses: actions/checkout@v6
+        with:
+          repository: MetaCubeX/mihomo
+          ref: Meta
+
+      - name: Setup `Go`
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ needs.go.outputs.go_version }}
+
+      - name: Build `mihomo Meta` core (Linux)
+        if: ${{ matrix.goos == 'linux' }}
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${meta_linux_TAGS}" -o meta
+
+      - name: Build `mihomo Meta` core (Windows)
+        if: ${{ matrix.goos == 'windows' }}
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${meta_windows_TAGS}" -o meta
+
+      - name: Upload files to workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: mihomo-meta-${{ matrix.name }}
+          path: meta*
+
+  alpha_version:
+    runs-on: ubuntu-latest
+    outputs:
+      alpha_version: ${{ steps.version.outputs.alpha_version }}
+      alpha_linux_tags: ${{ steps.version.outputs.alpha_linux_tags }}
+      alpha_windows_tags: ${{ steps.version.outputs.alpha_windows_tags }}
+      alpha_time: ${{ steps.version.outputs.alpha_time}}
+      alpha_skip_update: ${{ steps.compare.outputs.skip_update }}
+    steps:
+      - name: Get `mihomo Alpha` version and time
+        id: version
+        run: |
+          echo "alpha_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0].assets[].name' | perl -ne '/(alpha\-)([^.]+)/ && print "$1$2\n"' | head -n 1)" >> ${GITHUB_OUTPUT}
+          echo "alpha_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0] | (.updated_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_OUTPUT}
+          echo "alpha_linux_tags=no_tailscale" >> ${GITHUB_OUTPUT}
+          echo "alpha_windows_tags=with_gvisor,no_tailscale" >> ${GITHUB_OUTPUT}
+
+      - name: Compare `mihomo Alpha` versions with current release
+        id: compare
+        run: |
+          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
+          arch="mihomo Alpha|${{ steps.version.outputs.alpha_version }}|${{ steps.version.outputs.alpha_time }}"
+          IFS="|" read -r name version time <<< "$arch"
+          if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
+            echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
+            skip_update=true
+          else
+            echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
+            skip_update=false
+          fi
+          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+
+  alpha_cross:
+    runs-on: ubuntu-latest
+    if: ${{ needs.alpha_version.outputs.alpha_skip_update != 'true' }}
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1 }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3 }
+          - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
+          - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64 }
+          - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
+          - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
+          - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
+          # Windows
+          - { name: windows-amd64-v1, goos: windows, goarch: amd64, goamd64: v1 }
+          - { name: windows-amd64-v3, goos: windows, goarch: amd64, goamd64: v3 }
+          - { name: windows-arm64, goos: windows, goarch: arm64 }
+
+      fail-fast: false
+    needs:
+      - go
+      - alpha_version
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      GOAMD64: ${{ matrix.goamd64 }}
+      GOARM: ${{ matrix.goarm }}
+      GOMIPS: ${{ matrix.gomips }}
+      CGO_ENABLED: 0
+      alpha_VERSION: ${{ needs.alpha_version.outputs.alpha_version }}
+      alpha_TIME: ${{ needs.alpha_version.outputs.alpha_time }}
+      alpha_linux_TAGS: ${{ needs.alpha_version.outputs.alpha_linux_tags }}
+      alpha_windows_TAGS: ${{ needs.alpha_version.outputs.alpha_windows_tags }}
+    steps:
+      - name: Checkout `Alpha`
+        uses: actions/checkout@v6
+        with:
+          repository: MetaCubeX/mihomo
+          ref: Alpha
+
+      - name: Setup `Go`
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ needs.go.outputs.go_version }}
+
+      - name: Build `mihomo Alpha` core (Linux)
+        if: ${{ matrix.goos == 'linux' }}
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${alpha_linux_TAGS}" -o alpha
+
+      - name: Build `mihomo Alpha` core (Windows)
+        if: ${{ matrix.goos == 'windows' }}
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${alpha_windows_TAGS}" -o alpha
+
+      - name: Upload files to workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: mihomo-alpha-${{ matrix.name }}
+          path: alpha*
+
+  push_mihomo:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - meta_version
+      - meta_cross
+      - alpha_version
+      - alpha_cross
+    env:
+      meta_VERSION: ${{ needs.meta_version.outputs.meta_version }}
+      meta_TIME: ${{ needs.meta_version.outputs.meta_time }}
+      meta_SKIP_UPDATE: ${{ needs.meta_version.outputs.meta_skip_update }}
+      alpha_VERSION: ${{ needs.alpha_version.outputs.alpha_version }}
+      alpha_TIME: ${{ needs.alpha_version.outputs.alpha_time }}
+      alpha_SKIP_UPDATE: ${{ needs.alpha_version.outputs.alpha_skip_update }}
     steps:
       - name: Clone Repository
         uses: actions/checkout@v6
 
-      - name: Set variables
-        run: |
-          echo "download_url=https://github.com/MetaCubeX/mihomo/releases/download" >> ${GITHUB_ENV}
-          echo "meta_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name')" >> ${GITHUB_ENV}
-          echo "meta_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
-          echo "alpha_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0].assets[].name' | perl -ne '/(alpha\-)([^.]+)/ && print "$1$2\n"' | head -n 1)" >> ${GITHUB_ENV}
-          echo "alpha_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0] | (.updated_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
-        shell: bash
-
-      - name: Compare `mihomo` versions with current release
-        run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
-          archs=(
-            "mihomo Meta|${meta_version}|${meta_time}"
-            "mihomo Alpha|${alpha_version}|${alpha_time}"
-          )
-          for arch in "${archs[@]}"; do
-            IFS="|" read -r name version time <<< "$arch"
-            var_name="${name// /_}_skip_update"
-            if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
-              echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
-              eval "${var_name}=true"
-            else
-              echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
-              eval "${var_name}=false"
-            fi
-            eval "value=\$${var_name}"
-            echo "${var_name}=${value}" >> ${GITHUB_ENV}
-          done
+      - name: Download files from workspace
+        uses: actions/download-artifact@v8
+        with:
+          path: ./tmp/
 
       - name: Download `mihomo Meta` files
-        if: ${{ env.mihomo_Meta_skip_update != 'true' }}
+        if: ${{ env.meta_SKIP_UPDATE != 'true' }}
         run: |
           # Linux (Ready for compress cores by `UPX`)
           mkdir -p ./mihomo/
           linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
           for i in "${!linux_archs[@]}"; do
-            curl -sS -L "${download_url}/${meta_version}/mihomo-linux-${linux_archs[i]}-${meta_version}.gz" | gunzip -c > ./mihomo/mihomo-meta-linux-${linux_archs[i]}.upx
+            mv -f "./tmp/mihomo-meta-linux-${linux_archs[i]}/meta" ./mihomo/mihomo-meta-linux-${linux_archs[i]}.upx
             chmod +x ./mihomo/mihomo-meta-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          mkdir -p ./tmp-meta/
           windows_archs=(amd64-v1 amd64-v3 arm64)
           for j in "${!windows_archs[@]}"; do
-            mkdir -p "./tmp-meta/meta_windows_${windows_archs[j]}"
-            wget -q -P "./tmp-meta/meta_windows_${windows_archs[j]}/" "${download_url}/${meta_version}/mihomo-windows-${windows_archs[j]}-${meta_version}.zip"
-            unzip -q -o "./tmp-meta/meta_windows_${windows_archs[j]}/mihomo-windows-${windows_archs[j]}-${meta_version}.zip" -d "./tmp-meta/meta_windows_${windows_archs[j]}/"
-            mv -f "./tmp-meta/meta_windows_${windows_archs[j]}/mihomo-windows-${windows_archs[j]}.exe" "./mihomo/mihomo-meta-windows-${windows_archs[j]}.exe"
+            mv -f "./tmp/mihomo-meta-windows-${windows_archs[j]}/meta" "./mihomo/mihomo-meta-windows-${windows_archs[j]}.exe"
           done
-          rm -rf ./tmp-meta*
 
       - name: Download `mihomo Alpha` files
-        if: ${{ env.mihomo_Alpha_skip_update != 'true' }}
+        if: ${{ env.alpha_SKIP_UPDATE != 'true' }}
         run: |
           # Linux (Ready for compress cores by `UPX`)
           mkdir -p ./mihomo/
           linux_archs=(amd64-v1 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-softfloat mipsle-hardfloat)
           for i in "${!linux_archs[@]}"; do
-            curl -sS -L "${download_url}/Prerelease-Alpha/mihomo-linux-${linux_archs[i]}-${alpha_version}.gz" | gunzip -c > ./mihomo/mihomo-alpha-linux-${linux_archs[i]}.upx
+            mv -f "./tmp/mihomo-alpha-linux-${linux_archs[i]}/alpha" ./mihomo/mihomo-alpha-linux-${linux_archs[i]}.upx
             chmod +x ./mihomo/mihomo-alpha-linux-${linux_archs[i]}.upx
           done
 
           # Windows
-          mkdir -p ./tmp-alpha/
           windows_archs=(amd64-v1 amd64-v3 arm64)
           for j in "${!windows_archs[@]}"; do
-            mkdir -p "./tmp-alpha/alpha_windows_${windows_archs[j]}"
-            wget -q -P "./tmp-alpha/alpha_windows_${windows_archs[j]}/" "${download_url}/Prerelease-Alpha/mihomo-windows-${windows_archs[j]}-${alpha_version}.zip"
-            unzip -q -o "./tmp-alpha/alpha_windows_${windows_archs[j]}/mihomo-windows-${windows_archs[j]}-${alpha_version}.zip" -d "./tmp-alpha/alpha_windows_${windows_archs[j]}/"
-            mv -f "./tmp-alpha/alpha_windows_${windows_archs[j]}/mihomo-windows-${windows_archs[j]}.exe" "./mihomo/mihomo-alpha-windows-${windows_archs[j]}.exe"
+            mv -f "./tmp/mihomo-alpha-windows-${windows_archs[j]}/alpha" "./mihomo/mihomo-alpha-windows-${windows_archs[j]}.exe"
           done
-          rm -rf ./tmp-alpha*
 
       - name: Setup `UPX` and compress `mihomo` files
-        if: ${{ env.mihomo_Meta_skip_update != 'true' || env.mihomo_Alpha_skip_update != 'true' }}
+        if: ${{ env.meta_SKIP_UPDATE != 'true' || env.alpha_SKIP_UPDATE != 'true' }}
         uses: crazy-max/ghaction-upx@v4
         with:
           version: latest
           files: ./mihomo/*.upx
 
       - name: Check if `mihomo` files exist
+        id: check
         run: |
           if ls ./mihomo/* >/dev/null 2>&1; then
             echo "mihomo 文件夹内存在新内核文件，需要上传"
-            echo "mihomo_exist=true" >> ${GITHUB_ENV}
+            echo "mihomo_exist=true" >> ${GITHUB_OUTPUT}
           else
             echo "mihomo 文件夹内没有新内核文件，无需上传"
-            echo "mihomo_exist=false" >> ${GITHUB_ENV}
+            echo "mihomo_exist=false" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Release and upload `mihomo` assets
-        if: ${{ env.mihomo_exist == 'true' }}
+        if: ${{ steps.check.outputs.mihomo_exist == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -123,7 +300,7 @@ jobs:
           tag: mihomo
           overwrite: true
           body: |
-            更新 [mihomo Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)至 ${{ env.meta_version }}，发布于 ${{ env.meta_time }}
-            更新 [mihomo Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)至 ${{ env.alpha_version }}，发布于 ${{ env.alpha_time }}
+            更新 [mihomo Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)至 v${{ env.meta_VERSION }}，发布于 ${{ env.meta_TIME }}
+            更新 [mihomo Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)至 ${{ env.alpha_VERSION }}，发布于 ${{ env.alpha_TIME }}
           file_glob: true
           file: ./mihomo/*

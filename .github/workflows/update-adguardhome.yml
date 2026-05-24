@@ -17,109 +17,280 @@ permissions:
   contents: write
 
 jobs:
-  Update:
+  go:
     runs-on: ubuntu-latest
+    outputs:
+      go_version: ${{ steps.go.outputs.version }}
+    steps:
+      - name: Get `Go` latest version
+        id: go
+        run: |
+          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> ${GITHUB_OUTPUT}
+
+  node:
+    runs-on: ubuntu-latest
+    outputs:
+      node_version: ${{ steps.node.outputs.version }}
+    steps:
+      - name: Get `Node` latest version (LTS)
+        id: node
+        run: |
+          echo "version=$(curl -sSL https://nodejs.org/dist/index.json | jq -r 'map(select(.lts)) | .[0].version[1:]')" >> ${GITHUB_OUTPUT}
+
+  release_version:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.version.outputs.release_version }}
+      release_time: ${{ steps.version.outputs.release_time }}
+      release_skip_update: ${{ steps.compare.outputs.skip_update }}
+    steps:
+      - name: Get `AdGuard Home Release` version and time
+        id: version
+        run: |
+          echo "release_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.tag_name')" >> ${GITHUB_OUTPUT}
+          echo "release_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_OUTPUT}
+
+      - name: Compare `AdGuard Home Release` version with current release
+        id: compare
+        run: |
+          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
+          arch="AdGuard Home Release|${{ steps.version.outputs.release_version }}|${{ steps.version.outputs.release_time }}"
+          IFS="|" read -r name version time <<< "$arch"
+          if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
+            echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
+            skip_update=true
+          else
+            echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
+            skip_update=false
+          fi
+          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+
+  release_cross:
+    runs-on: ubuntu-latest
+    if: ${{ needs.release_version.outputs.release_skip_update != 'true' }}
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - { name: linux_amd64, goos: linux, goarch: amd64 }
+          - { name: linux_armv5, goos: linux, goarch: arm, goarm: 5 }
+          - { name: linux_armv6, goos: linux, goarch: arm, goarm: 6 }
+          - { name: linux_armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux_arm64, goos: linux, goarch: arm64 }
+          - { name: linux_mips_softfloat, goos: linux, goarch: mips, gomips: softfloat }
+          - { name: linux_mipsle_softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
+          # Windows
+          - { name: windows_amd64, goos: windows, goarch: amd64 }
+          - { name: windows_arm64, goos: windows, goarch: arm64 }
+
+      fail-fast: false
+    needs:
+      - go
+      - node
+      - release_version
+    env:
+      release_VERSION: ${{ needs.release_version.outputs.release_version }}
+    steps:
+      - name: Checkout `AdguardTeam/AdGuardHome`
+        uses: actions/checkout@v6
+        with:
+          repository: AdguardTeam/AdGuardHome
+
+      - name: Setup `Go`
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ needs.go.outputs.go_version }}
+
+      - name: Adapt `Go` version
+        run: |
+          go get go@${{ needs.go.outputs.go_version }}
+          go mod tidy
+          go get -u
+
+      - name: Setup `Node`
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.node.outputs.node_version }}
+
+      - name: Setup `Snapcraft`
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Build `AdGuard Home Release`
+        run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=release VERSION=${{ env.release_VERSION }} GOTOOLCHAIN=local build-release
+
+      - name: Upload files to workspace
+        uses: actions/upload-artifact@v7
+        with:
+          name: AdGuardHome_release_${{ matrix.name }}
+          path: '**/AdGuardHome/AdGuardHome*'
+
+  beta_version:
+    runs-on: ubuntu-latest
+    outputs:
+      beta_version: ${{ steps.version.outputs.beta_version }}
+      beta_time: ${{ steps.version.outputs.beta_time }}
+      beta_skip_update: ${{ steps.compare.outputs.skip_update }}
+    steps:
+      - name: Get `AdGuard Home Beta` version and time
+        id: version
+        run: |
+          echo "beta_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0].tag_name')" >> ${GITHUB_OUTPUT}
+          echo "beta_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0] | (.published_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_OUTPUT}
+
+      - name: Compare `AdGuard Home Beta` version with current release
+        id: compare
+        run: |
+          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
+          arch="AdGuard Home Beta|${{ steps.version.outputs.beta_version }}|${{ steps.version.outputs.beta_time }}"
+          IFS="|" read -r name version time <<< "$arch"
+          if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
+            echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
+            skip_update=true
+          else
+            echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
+            skip_update=false
+          fi
+          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+
+  beta_cross:
+    runs-on: ubuntu-latest
+    if: ${{ needs.beta_version.outputs.beta_skip_update != 'true' }}
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - { name: linux_amd64, goos: linux, goarch: amd64 }
+          - { name: linux_armv5, goos: linux, goarch: arm, goarm: 5 }
+          - { name: linux_armv6, goos: linux, goarch: arm, goarm: 6 }
+          - { name: linux_armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux_arm64, goos: linux, goarch: arm64 }
+          - { name: linux_mips_softfloat, goos: linux, goarch: mips, gomips: softfloat }
+          - { name: linux_mipsle_softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
+          # Windows
+          - { name: windows_amd64, goos: windows, goarch: amd64 }
+          - { name: windows_arm64, goos: windows, goarch: arm64 }
+
+      fail-fast: false
+    needs:
+      - go
+      - node
+      - beta_version
+    env:
+      beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
+    steps:
+      - name: Checkout `AdguardTeam/AdGuardHome`
+        uses: actions/checkout@v6
+        with:
+          repository: AdguardTeam/AdGuardHome
+
+      - name: Setup `Go`
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ needs.go.outputs.go_version }}
+
+      - name: Adapt `Go` version
+        run: |
+          go get go@${{ needs.go.outputs.go_version }}
+          go mod tidy
+          go get -u
+
+      - name: Setup `Node`
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.node.outputs.node_version }}
+
+      - name: Setup `Snapcraft`
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Build `AdGuard Home Beta`
+        run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=beta VERSION=${{ env.beta_VERSION }} GOTOOLCHAIN=local build-release
+
+      - name: Upload files to workspace
+        uses: actions/upload-artifact@v7
+        with:
+          name: AdGuardHome_beta_${{ matrix.name }}
+          path: '**/AdGuardHome/AdGuardHome*'
+
+  push_adguardhome:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - release_version
+      - release_cross
+      - beta_version
+      - beta_cross
+    env:
+      release_VERSION: ${{ needs.release_version.outputs.release_version }}
+      release_TIME: ${{ needs.release_version.outputs.release_time }}
+      release_SKIP_UPDATE: ${{ needs.release_version.outputs.release_skip_update }}
+      beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
+      beta_TIME: ${{ needs.beta_version.outputs.beta_time }}
+      beta_SKIP_UPDATE: ${{ needs.beta_version.outputs.beta_skip_update }}
     steps:
       - name: Clone Repository
         uses: actions/checkout@v6
 
-      - name: Set variables
-        run: |
-          echo "download_url=https://github.com/AdguardTeam/AdGuardHome/releases/download" >> ${GITHUB_ENV}
-          echo "release_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.tag_name')" >> ${GITHUB_ENV}
-          echo "release_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
-          echo "beta_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0].tag_name')" >> ${GITHUB_ENV}
-          echo "beta_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0] | (.published_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')" >> ${GITHUB_ENV}
-        shell: bash
-
-      - name: Compare `AdGuard Home` versions with current release
-        run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
-          archs=(
-            "AdGuard Home Release|${release_version}|${release_time}"
-            "AdGuard Home Beta|${beta_version}|${beta_time}"
-          )
-          for arch in "${archs[@]}"; do
-            IFS="|" read -r name version time <<< "$arch"
-            var_name="${name// /_}_skip_update"
-            if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
-              echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
-              eval "${var_name}=true"
-            else
-              echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
-              eval "${var_name}=false"
-            fi
-            eval "value=\$${var_name}"
-            echo "${var_name}=${value}" >> ${GITHUB_ENV}
-          done
+      - name: Download files from workspace
+        uses: actions/download-artifact@v8
+        with:
+          path: ./tmp/
 
       - name: Download `AdGuard Home Release` files
-        if: ${{ env.AdGuard_Home_Release_skip_update != 'true' }}
+        if: ${{ env.release_SKIP_UPDATE != 'true' }}
         run: |
-          # Linux
+          # Linux (Ready for compress cores by `UPX`)
           mkdir -p ./AdGuardHome/
           linux_archs=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
           for i in "${!linux_archs[@]}"; do
-            mkdir -p "./tmp-release/release_linux_${linux_archs[i]}"
-            curl -sS -L "${download_url}/${release_version}/AdGuardHome_linux_${linux_archs[i]}.tar.gz" | tar -zx -C "./tmp-release/release_linux_${linux_archs[i]}"
-            mv -f "./tmp-release/release_linux_${linux_archs[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_release_linux_${linux_archs[i]}"
+            mv -f "./tmp/AdGuardHome_release_linux_${linux_archs[i]}/dist/AdGuardHome_linux_${linux_archs[i]//v/_}/AdGuardHome/AdGuardHome" ./AdGuardHome/AdGuardHome_release_linux_${linux_archs[i]}
+            chmod +x ./AdGuardHome/AdGuardHome_release_linux_${linux_archs[i]}
           done
-          chmod +x ./AdGuardHome/AdGuardHome_release_linux_*
 
           # Windows
           windows_archs=(amd64 arm64)
           for j in "${!windows_archs[@]}"; do
-            mkdir -p "./tmp-release/release_windows_${windows_archs[j]}/"
-            wget -q -P "./tmp-release/release_windows_${windows_archs[j]}/" "${download_url}/${release_version}/AdGuardHome_windows_${windows_archs[j]}.zip"
-            unzip -q -o "./tmp-release/release_windows_${windows_archs[j]}/AdGuardHome_windows_${windows_archs[j]}.zip" -d "./tmp-release/release_windows_${windows_archs[j]}/"
-            mv -f "./tmp-release/release_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_release_windows_${windows_archs[j]}.exe"
+            mv -f "./tmp/AdGuardHome_release_windows_${windows_archs[j]}/dist/AdGuardHome_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_release_windows_${windows_archs[j]}.exe"
           done
-          rm -rf ./tmp-release*
 
       - name: Download `AdGuard Home Beta` files
-        if: ${{ env.AdGuard_Home_Beta_skip_update != 'true' }}
+        if: ${{ env.beta_SKIP_UPDATE != 'true' }}
         run: |
-          # Linux
+          # Linux (Ready for compress cores by `UPX`)
           mkdir -p ./AdGuardHome/
           linux_archs=(amd64 armv5 armv6 armv7 arm64 mips_softfloat mipsle_softfloat)
           for i in "${!linux_archs[@]}"; do
-            mkdir -p "./tmp-beta/beta_linux_${linux_archs[i]}"
-            curl -sS -L "${download_url}/${beta_version}/AdGuardHome_linux_${linux_archs[i]}.tar.gz" | tar -zx -C "./tmp-beta/beta_linux_${linux_archs[i]}"
-            mv -f "./tmp-beta/beta_linux_${linux_archs[i]}/AdGuardHome/AdGuardHome" "./AdGuardHome/AdGuardHome_beta_linux_${linux_archs[i]}"
+            mv -f "./tmp/AdGuardHome_beta_linux_${linux_archs[i]}/dist/AdGuardHome_linux_${linux_archs[i]//v/_}/AdGuardHome/AdGuardHome" ./AdGuardHome/AdGuardHome_beta_linux_${linux_archs[i]}
+            chmod +x ./AdGuardHome/AdGuardHome_beta_linux_${linux_archs[i]}
           done
-          chmod +x ./AdGuardHome/AdGuardHome_beta_linux_*
 
           # Windows
           windows_archs=(amd64 arm64)
           for j in "${!windows_archs[@]}"; do
-            mkdir -p "./tmp-beta/beta_windows_${windows_archs[j]}/"
-            wget -q -P "./tmp-beta/beta_windows_${windows_archs[j]}/" "${download_url}/${beta_version}/AdGuardHome_windows_${windows_archs[j]}.zip"
-            unzip -q -o "./tmp-beta/beta_windows_${windows_archs[j]}/AdGuardHome_windows_${windows_archs[j]}.zip" -d "./tmp-beta/beta_windows_${windows_archs[j]}/"
-            mv -f "./tmp-beta/beta_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_beta_windows_${windows_archs[j]}.exe"
+            mv -f "./tmp/AdGuardHome_beta_windows_${windows_archs[j]}/dist/AdGuardHome_windows_${windows_archs[j]}/AdGuardHome/AdGuardHome.exe" "./AdGuardHome/AdGuardHome_beta_windows_${windows_archs[j]}.exe"
           done
-          rm -rf ./tmp-beta*
 
       - name: Setup `UPX` and compress `AdGuard Home` files
-        if: ${{ env.AdGuard_Home_Release_skip_update != 'true' || env.AdGuard_Home_Beta_skip_update != 'true' }}
+        if: ${{ env.release_SKIP_UPDATE != 'true' || env.beta_SKIP_UPDATE != 'true' }}
         uses: crazy-max/ghaction-upx@v4
         with:
           version: latest
-          files: |
-            ./AdGuardHome/AdGuardHome_release_linux*
-            ./AdGuardHome/AdGuardHome_beta_linux*
+          files: ./AdGuardHome/*linux*
 
-      - name: Check if `AdGuardHome` files exist
+      - name: Check if `AdGuard Home` files exist
+        id: check
         run: |
           if ls ./AdGuardHome/* >/dev/null 2>&1; then
-            echo "AdGuardHome 文件夹内存在新文件，需要上传"
-            echo "adguardhome_exist=true" >> ${GITHUB_ENV}
+            echo "AdGuard Home 文件夹内存在新内核文件，需要上传"
+            echo "adguardhome_exist=true" >> ${GITHUB_OUTPUT}
           else
-            echo "AdGuardHome 文件夹内没有新文件，无需上传"
-            echo "adguardhome_exist=false" >> ${GITHUB_ENV}
+            echo "AdGuard Home 文件夹内没有新内核文件，无需上传"
+            echo "adguardhome_exist=false" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Release and upload `AdGuardHome` assets
-        if: ${{ env.adguardhome_exist == 'true' }}
+        if: ${{ steps.check.outputs.adguardhome_exist == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -127,7 +298,7 @@ jobs:
           tag: AdGuardHome
           overwrite: true
           body: |
-            更新 [AdGuard Home Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)至 ${{ env.release_version }}，发布于 ${{ env.release_time }}
-            更新 [AdGuard Home Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)至 ${{ env.beta_version }}，发布于 ${{ env.beta_time }}
+            更新 [AdGuard Home Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)至 ${{ env.release_VERSION }}，发布于 ${{ env.release_TIME }}
+            更新 [AdGuard Home Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)至 ${{ env.beta_VERSION }}，发布于 ${{ env.beta_TIME }}
           file_glob: true
           file: ./AdGuardHome/*
