@@ -4,7 +4,7 @@
 1. mihomo [Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)和 [Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)内核
 2. [reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-stable)和 [reF1nd-Testing 版](https://github.com/reF1nd/sing-box/tree/reF1nd-testing)内核和 Android 安装包（支持[提供者](https://sing-boxr.dustinwin.us.kg/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
 3. sing-box [Stable 版](https://github.com/SagerNet/sing-box/tree/stable)和 [Testing 版](https://github.com/SagerNet/sing-box/tree/testing)内核
-4. Dashboard 面板：[Yacd-meta 面板](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd 面板](https://github.com/MetaCubeX/metacubexd)和 [zashboard 面板](https://github.com/Zephyruso/zashboard)
+4. Dashboard 面板：[Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd](https://github.com/MetaCubeX/metacubexd)、[zashboard](https://github.com/Zephyruso/zashboard)、[zashboard sing-box 版](https://github.com/Zephyruso/zashboard)和 [sing-box dashboard](https://github.com/SagerNet/sing-box-dashboard)
 5. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
 
 **注：**
@@ -56,17 +56,22 @@ curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/Dus
 ```
 </details>
 
-## 2. 安装 Dashboard 面板（以 ShellCrash 安装 zashboard 面板为例）
+## 2. 安装 Dashboard 面板（以 ShellCrash 安装 zashboard 为例）
 **Dashboard 面板对应文件名和网址关系如下表：**
 |面板名称|文件名|网址|
 |-----|-----|-----|
-|Yacd-meta 面板|`Yacd-meta.tar.gz`|<https://yacd.metacubex.one>|
-|metacubexd 面板|`metacubexd.tar.gz`|<https://metacubex.github.io/metacubexd/>|
-|zashboard 面板|`zashboard.tar.gz`|<https://board.zash.run.place>|
+|Yacd-meta|`Yacd-meta.tar.gz`|<https://yacd.metacubex.one>|
+|metacubexd|`metacubexd.tar.gz`|<https://metacubex.github.io/metacubexd/>|
+|zashboard|`zashboard.tar.gz`|<https://board.zash.run.place>|
+|zashboard sing-box 版|`zashboard-sing-box.tar.gz`|<https://board.zash.run.place>|
+|sing-box dashboard|`sing-box-dashboard.tar.gz`|<https://sing-box-dashboard.sagernet.org>|
 
 连接 SSH 后执行如下命令：
 ```shell
+# zashboard
 curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard.tar.gz | tar -zx -C $CRASHDIR/ui/ && $CRASHDIR/start.sh restart
+# zashboard sing-box 版
+curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard-sing-box.tar.gz | tar -zx -C $CRASHDIR/dashboard/ && $CRASHDIR/start.sh restart
 ```
 - 注：若使用基于 [Chromium 项目](https://www.chromium.org/Home/)开发的浏览器打开网址去访问 Dashboard 面板时，以 [Chrome 浏览器](https://www.google.com/chrome/)为例，需要设置该网址域名“允许显示不安全内容”。方法如下：  
 进入设置 → 隐私和安全 → 网站设置 → 更多内容设置 → 不安全内容（或者地址栏直接打开 chrome://settings/content/insecureContent 进行设置），在“允许显示不安全内容”内添加网址域名如：`board.zash.run.place`
@@ -117,7 +122,7 @@ curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.c
 </details>
 
 # 三、 扩展（以 ShellCrash 配置定时任务为例）
-可在 ShellCrash 里添加定时更新 mihomo 内核、sing-box 内核、zashboard 面板和 AdGuard Home 的任务
+可在 ShellCrash 里添加定时更新 mihomo 内核、sing-box 内核、zashboard 和 AdGuard Home 的任务
 1. 连接 SSH 后执行 `vi $CRASHDIR/configs/task/task.user`，按一下 Ins 键（Insert 键），粘贴如下内容：  
 注：
 - 1. 留意链接后缀是否与 CPU 架构匹配
@@ -127,7 +132,7 @@ curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.c
 201#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/mihomo/mihomo-meta-linux-arm64.upx >/dev/null 2>&1#更新mihomo内核
 202#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/sing-box/sing-box-ref1nd-stable-linux-arm64.upx >/dev/null 2>&1#更新sing-boxr内核
 203#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/sing-box/sing-box-stable-linux-arm64.upx >/dev/null 2>&1#更新sing-box内核
-204#curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard.tar.gz | tar -zx -C $CRASHDIR/ui/ >/dev/null 2>&1#更新zashboard面板
+204#curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard.tar.gz | tar -zx -C $CRASHDIR/ui/ >/dev/null 2>&1#更新zashboard
 205#curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/AdGuardHome/AdGuardHome_beta_linux_arm64 >/dev/null 2>&1#更新AdGuardHome
 ```
 2. 按一下 Esc 键（退出键），输入英文冒号 `:`，继续输入 `wq` 并回车
