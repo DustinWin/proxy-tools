@@ -107,7 +107,7 @@ jobs:
       meta_windows_TAGS: ${{ needs.meta_version.outputs.meta_windows_tags }}
     steps:
       - name: Checkout `Meta`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: MetaCubeX/mihomo
           ref: Meta
@@ -217,7 +217,7 @@ jobs:
       alpha_windows_TAGS: ${{ needs.alpha_version.outputs.alpha_windows_tags }}
     steps:
       - name: Checkout `Alpha`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: MetaCubeX/mihomo
           ref: Alpha
@@ -264,7 +264,7 @@ jobs:
       alpha_SKIP_UPDATE: ${{ needs.alpha_version.outputs.alpha_skip_update }}
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download files from workspace
         if: ${{ env.meta_SKIP_UPDATE != 'true' || env.alpha_SKIP_UPDATE != 'true' }}

@@ -101,7 +101,7 @@ jobs:
       release_VERSION: ${{ needs.release_version.outputs.release_version }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: AdguardTeam/AdGuardHome
 
@@ -198,7 +198,7 @@ jobs:
       beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: AdguardTeam/AdGuardHome
 
@@ -248,7 +248,7 @@ jobs:
       beta_SKIP_UPDATE: ${{ needs.beta_version.outputs.beta_skip_update }}
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download files from workspace
         if: ${{ env.release_SKIP_UPDATE != 'true' || env.beta_SKIP_UPDATE != 'true' }}

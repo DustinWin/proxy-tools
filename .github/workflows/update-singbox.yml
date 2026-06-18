@@ -106,7 +106,7 @@ jobs:
       ref1nd_stable_windows_TAGS: ${{ needs.ref1nd_stable_version.outputs.ref1nd_stable_windows_tags }}
     steps:
       - name: Checkout `reF1nd/sing-box`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: reF1nd/sing-box
           ref: reF1nd-stable
@@ -209,7 +209,7 @@ jobs:
       ref1nd_testing_windows_TAGS: ${{ needs.ref1nd_testing_version.outputs.ref1nd_testing_windows_tags }}
     steps:
       - name: Checkout `reF1nd/sing-box`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: reF1nd/sing-box
           ref: reF1nd-testing
@@ -312,7 +312,7 @@ jobs:
       singbox_stable_windows_TAGS: ${{ needs.singbox_stable_version.outputs.singbox_stable_windows_tags }}
     steps:
       - name: Checkout `SagerNet/sing-box`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: SagerNet/sing-box
           ref: stable
@@ -415,7 +415,7 @@ jobs:
       singbox_testing_windows_TAGS: ${{ needs.singbox_testing_version.outputs.singbox_testing_windows_tags }}
     steps:
       - name: Checkout `SagerNet/sing-box`
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: SagerNet/sing-box
           ref: testing
@@ -466,7 +466,7 @@ jobs:
       singbox_testing_SKIP_UPDATE: ${{ needs.singbox_testing_version.outputs.singbox_testing_skip_update }}
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download files from workspace
         if: ${{ env.ref1nd_stable_SKIP_UPDATE != 'true' || env.ref1nd_testing_SKIP_UPDATE != 'true' || env.singbox_stable_SKIP_UPDATE != 'true' || env.singbox_testing_SKIP_UPDATE != 'true' }}
