@@ -2,7 +2,7 @@
 # 一、 说明
 每天凌晨（北京时间 UTC+8）自动构建生成：
 1. mihomo [Meta 版](https://github.com/MetaCubeX/mihomo/tree/Meta)和 [Alpha 版](https://github.com/MetaCubeX/mihomo/tree/Alpha)内核
-2. [reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-stable)和 [reF1nd-Testing 版](https://github.com/reF1nd/sing-box/tree/reF1nd-testing)内核和 Android 安装包（支持[提供者](https://sing-boxr.dustinwin.us.kg/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
+2. [reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-stable)和 [reF1nd-Testing 版](https://github.com/reF1nd/sing-box/tree/reF1nd-testing)内核和 Android 安装包（支持[提供者](https://sing-boxr.dustinwin.cc.cd/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
 3. sing-box [Stable 版](https://github.com/SagerNet/sing-box/tree/stable)和 [Testing 版](https://github.com/SagerNet/sing-box/tree/testing)内核
 4. Dashboard 面板：[Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd](https://github.com/MetaCubeX/metacubexd)、[zashboard](https://github.com/Zephyruso/zashboard) 和 [sing-box dashboard](https://github.com/SagerNet/sing-box-dashboard)
 5. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
@@ -12,7 +12,7 @@
 - 2. 查看 CPU 架构可连接 SSH 后执行命令 `uname -ms`，若执行结果是“linux aarch64”，就是搭载的 ARM64 架构
 - 3. 本项目中 mihomo 内核和 sing-box 内核 Linux 端已精简 `gvisor` 和 `tailscale`
 - 4. 本项目中 mihomo 内核、sing-box 内核和 AdGuard Home 的 Linux 端均采用 [UPX](https://github.com/upx/upx) 压缩方式
-- 5. 对下载源的说明，可[点此](https://proxy-tutorials.dustinwin.us.kg/about/#%E5%AF%B9%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%9A%84%E8%AF%B4%E6%98%8E)了解
+- 5. 对下载源的说明，可[点此](https://proxy-tutorials.dustinwin.cc.cd/about/#%E5%AF%B9%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%9A%84%E8%AF%B4%E6%98%8E)了解
 
 # 二、 使用方法
 ## 1. 导入内核（以 [ShellCrash](https://github.com/juewuy/ShellCrash) 导入内核为例）
