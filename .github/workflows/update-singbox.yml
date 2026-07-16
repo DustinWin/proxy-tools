@@ -112,7 +112,7 @@ jobs:
           ref: reF1nd-stable
 
       - name: Setup `Go`
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
@@ -215,7 +215,7 @@ jobs:
           ref: reF1nd-testing
 
       - name: Setup `Go`
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
@@ -318,7 +318,7 @@ jobs:
           ref: stable
 
       - name: Setup `Go`
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
@@ -421,7 +421,7 @@ jobs:
           ref: testing
 
       - name: Setup `Go`
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ needs.go.outputs.go_version }}
 
