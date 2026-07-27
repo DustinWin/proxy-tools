@@ -40,8 +40,8 @@ jobs:
         id: version
         run: |
           while true; do
-            ref1nd_stable_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box-releases/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-            ref1nd_stable_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box-releases/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            ref1nd_stable_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags?per_page=100 | jq -r '.[].name' | grep -Po '^v?\K[0-9]+\.[0-9]+\.[0-9]+-reF1nd.*' | head -n 1)
+            ref1nd_stable_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/commits/$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags?per_page=100 | jq -r '.[].name' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+-reF1nd.*' | head -n 1) | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
             if [[ -n "${ref1nd_stable_version}" && "${ref1nd_stable_version}" != "null" ]]; then
               echo "ref1nd_stable_version=${ref1nd_stable_version}" >> ${GITHUB_OUTPUT}
               echo "ref1nd_stable_time=${ref1nd_stable_time}" >> ${GITHUB_OUTPUT}
@@ -139,12 +139,12 @@ jobs:
       ref1nd_testing_windows_tags: ${{ steps.version.outputs.ref1nd_testing_windows_tags }}
       ref1nd_testing_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
-      - name: Get `sing-box reF1nd-Test` version
+      - name: Get `sing-box reF1nd-Testing` version
         id: version
         run: |
           while true; do
-            ref1nd_testing_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box-releases/releases | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | .tag_name' | head -n 1 | sed 's/^v//')
-            ref1nd_testing_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box-releases/releases | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | (.published_at // .created_at)' | head -n 1 | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            ref1nd_testing_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags | jq -r '.[].name' | grep -Po '^v\K.*(alpha|beta|rc).*-reF1nd.*' | head -n 1)
+            ref1nd_testing_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/commits/$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags | jq -r '.[].name' | grep -P '^v.*(alpha|beta|rc).*-reF1nd.*' | head -n 1) | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
             if [[ -n "${ref1nd_testing_version}" && "${ref1nd_testing_version}" != "null" ]]; then
               echo "ref1nd_testing_version=${ref1nd_testing_version}" >> ${GITHUB_OUTPUT}
               echo "ref1nd_testing_time=${ref1nd_testing_time}" >> ${GITHUB_OUTPUT}
