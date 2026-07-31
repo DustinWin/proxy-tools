@@ -91,8 +91,35 @@ curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.c
 # AdGuard Home Beta 版
 curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/AdGuardHome/AdGuardHome_beta_linux_arm64
 chmod +x /data/AdGuardHome/AdGuardHome
-/data/AdGuardHome/AdGuardHome -s install
-/data/AdGuardHome/AdGuardHome -s start
+cat <<'EOF' > /data/AdGuardHome/AdGuardHome.sh
+#!/bin/sh /etc/rc.common
+
+START=95
+STOP=01
+USE_PROCD=1
+
+WORK_DIR="/data/AdGuardHome"
+CONFIG_FILE="$WORK_DIR/AdGuardHome.yaml"
+
+start_service() {
+    echo "AdGuard Home 正在启动..."
+    procd_open_instance
+    procd_set_param command "$WORK_DIR/AdGuardHome" -s run
+    procd_append_param command -c "$CONFIG_FILE"
+    procd_append_param command -w "$WORK_DIR"
+    procd_set_param pidfile /var/run/AdGuardHome.pid
+    procd_close_instance
+    echo "AdGuard Home 启动成功！"
+}
+
+stop_service() {
+    echo "AdGuard Home 正在停止..."
+    sleep 3
+    echo "AdGuard Home 停止成功！"
+}
+EOF
+cp -f /data/AdGuardHome/AdGuardHome.sh /etc/init.d/AdGuardHome
+chmod +x /etc/init.d/AdGuardHome && /etc/init.d/AdGuardHome start
 # 将所有发往 53 端口的流量重定向到本地的 5353 端口
 iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5353
 iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5353
@@ -100,10 +127,9 @@ ip6tables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5353
 ip6tables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5353
 # 添加开机启动
 cat <<EOF >> /data/auto_ssh/auto_ssh.sh
-
-sleep 10s
-/data/AdGuardHome/AdGuardHome -s install
-/data/AdGuardHome/AdGuardHome -s start
+sleep 20s
+cp -f /data/AdGuardHome/AdGuardHome.sh /etc/init.d/AdGuardHome
+chmod +x /etc/init.d/AdGuardHome && /etc/init.d/AdGuardHome start
 iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5353
 iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5353
 ip6tables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5353
@@ -126,20 +152,14 @@ curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.c
 
 # 三、 扩展（以 ShellCrash 配置定时任务为例）
 可在 ShellCrash 里添加定时更新 mihomo 内核、sing-box 内核、zashboard 和 AdGuard Home 的任务
-1. 连接 SSH 后执行 `vi $CRASHDIR/configs/task/task.user`，按一下 Ins 键（Insert 键），粘贴如下内容：  
-注：
-- 1. 留意链接后缀是否与 CPU 架构匹配
-- 2. 须重启 ShellCrash 和 AdGuard Home 服务后生效
-
+1. 进入 ShellCrash → 9) 更新与支持 → 2) 切换/更新内核文件 → 6) 使用自定义内核 → 9) 自定义内核链接，输入导入内核命令里的链接并回车，后“请确认该自定义内核的类型”
+2. 连接 SSH 后执行 `vi $CRASHDIR/configs/task/task.user`，按一下 Ins 键（Insert 键），粘贴如下内容：
 ```shell
-201#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/mihomo/mihomo-meta-linux-arm64.upx >/dev/null 2>&1#更新mihomo内核
-202#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/sing-box/sing-box-ref1nd-stable-linux-arm64.upx >/dev/null 2>&1#更新sing-boxr内核
-203#curl -sS -o $CRASHDIR/CrashCore.upx -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/sing-box/sing-box-stable-linux-arm64.upx >/dev/null 2>&1#更新sing-box内核
-204#curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard.tar.gz | tar -zx -C $CRASHDIR/ui/ >/dev/null 2>&1#更新zashboard
-205#curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/AdGuardHome/AdGuardHome_beta_linux_arm64 >/dev/null 2>&1#更新AdGuardHome
+201#curl -sS -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/Dashboard/zashboard.tar.gz | tar -zx -C $CRASHDIR/ui/ && $CRASHDIR/start.sh restart >/dev/null 2>&1#更新zashboard
+202#curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.com/DustinWin/proxy-tools/releases/download/AdGuardHome/AdGuardHome_beta_linux_arm64 && /data/AdGuardHome/AdGuardHome -s restart >/dev/null 2>&1#更新AdGuardHome
 ```
-2. 按一下 Esc 键（退出键），输入英文冒号 `:`，继续输入 `wq` 并回车
-3. 执行 `sc`，进入 ShellCrash → 5 配置自动任务 → 1 添加自动任务，可以看到末尾就有添加的定时任务，输入对应的数字并回车后可设置执行条件
+3. 按一下 Esc 键（退出键），输入英文冒号 `:`，继续输入 `wq` 并回车
+4. 执行 `sc`，进入 ShellCrash → 5 配置自动任务 → 1 添加自动任务，选择“8) 自动更新内核”和末尾处添加的定时任务，输入对应的数字并回车后可设置执行条件
 
 # 给作者加鸡腿
 <img src="https://github.com/user-attachments/assets/e640fdf6-0990-421f-8ec6-2d263b533b89" alt="支付宝" width="30%" />
