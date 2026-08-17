@@ -25,7 +25,7 @@ jobs:
       - name: Get `Go` latest version
         id: go
         run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> ${GITHUB_OUTPUT}
+          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
 
   ref1nd_stable_version:
     runs-on: ubuntu-latest
@@ -40,19 +40,25 @@ jobs:
         id: version
         run: |
           while true; do
-            ref1nd_stable_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags?per_page=100 | jq -r '.[].name' | grep -Po '^v?\K[0-9]+\.[0-9]+\.[0-9]+-reF1nd.*' | head -n 1)
-            ref1nd_stable_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/commits/$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags?per_page=100 | jq -r '.[].name' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+-reF1nd.*' | head -n 1) | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
-            if [[ -n "${ref1nd_stable_version}" && "${ref1nd_stable_version}" != "null" ]]; then
-              echo "ref1nd_stable_version=${ref1nd_stable_version}" >> ${GITHUB_OUTPUT}
-              echo "ref1nd_stable_time=${ref1nd_stable_time}" >> ${GITHUB_OUTPUT}
-              break
-            fi
+            for i in {1..5}; do
+              tags=$(curl -sSL "https://api.github.com/repos/reF1nd/sing-box/tags?per_page=100&page=$i")
+              ref1nd_stable_version=$(echo "${tags}" | jq -r '.[].name' | grep -Po '^v?\K[0-9]+\.[0-9]+\.[0-9]+-reF1nd.*' | head -n 1)
+              if [[ -n "${ref1nd_stable_version}" && "${ref1nd_stable_version}" != "null" ]]; then
+                echo "在第 $i 页成功获取到 reF1nd-Stable 版本号"
+                ref1nd_stable_time=$(curl -sSL "https://api.github.com/repos/reF1nd/sing-box/commits/v${ref1nd_stable_version}" | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+                echo "ref1nd_stable_version=${ref1nd_stable_version}" >> "${GITHUB_OUTPUT}"
+                echo "ref1nd_stable_time=${ref1nd_stable_time}" >> "${GITHUB_OUTPUT}"
+                exit 0
+              fi
+              echo "在第 $i 页未获取到 reF1nd-Stable 版本号，将在 5 秒后重试在第 $((i+1)) 页获取..."
+              sleep 5
+            done
             echo "未获取到 reF1nd-Stable 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "ref1nd_stable_linux_tags=with_quic,with_utls,with_clash_api" >> ${GITHUB_OUTPUT}
-          echo "ref1nd_stable_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> ${GITHUB_OUTPUT}
+          echo "ref1nd_stable_linux_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
+          echo "ref1nd_stable_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `sing-box reF1nd-Stable` versions with current release
         id: compare
@@ -67,7 +73,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   ref1nd_stable_cross:
     runs-on: ubuntu-latest
@@ -143,19 +149,20 @@ jobs:
         id: version
         run: |
           while true; do
-            ref1nd_testing_version=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags | jq -r '.[].name' | grep -Po '^v\K.*(alpha|beta|rc).*-reF1nd.*' | head -n 1)
-            ref1nd_testing_time=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/commits/$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags | jq -r '.[].name' | grep -P '^v.*(alpha|beta|rc).*-reF1nd.*' | head -n 1) | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            tags=$(curl -sSL https://api.github.com/repos/reF1nd/sing-box/tags)
+            ref1nd_testing_version=$(echo "${tags}" | jq -r '.[].name' | grep -Po '^v\K.*(alpha|beta|rc).*-reF1nd.*' | head -n 1)
             if [[ -n "${ref1nd_testing_version}" && "${ref1nd_testing_version}" != "null" ]]; then
-              echo "ref1nd_testing_version=${ref1nd_testing_version}" >> ${GITHUB_OUTPUT}
-              echo "ref1nd_testing_time=${ref1nd_testing_time}" >> ${GITHUB_OUTPUT}
+              ref1nd_testing_time=$(curl -sSL "https://api.github.com/repos/reF1nd/sing-box/commits/v${ref1nd_testing_version}" | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "ref1nd_testing_version=${ref1nd_testing_version}" >> "${GITHUB_OUTPUT}"
+              echo "ref1nd_testing_time=${ref1nd_testing_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未获取到 reF1nd-Testing 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "ref1nd_testing_linux_tags=with_quic,with_utls,with_clash_api" >> ${GITHUB_OUTPUT}
-          echo "ref1nd_testing_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> ${GITHUB_OUTPUT}
+          echo "ref1nd_testing_linux_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
+          echo "ref1nd_testing_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `sing-box reF1nd-Testing` versions with current release
         id: compare
@@ -170,7 +177,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   ref1nd_testing_cross:
     runs-on: ubuntu-latest
@@ -246,19 +253,20 @@ jobs:
         id: version
         run: |
           while true; do
-            singbox_stable_version=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-            singbox_stable_time=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            latest=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases/latest)
+            singbox_stable_version=$(echo "${latest}" | jq -r '.tag_name' | sed 's/^v//')
             if [[ -n "${singbox_stable_version}" && "${singbox_stable_version}" != "null" ]]; then
-              echo "singbox_stable_version=${singbox_stable_version}" >> ${GITHUB_OUTPUT}
-              echo "singbox_stable_time=${singbox_stable_time}" >> ${GITHUB_OUTPUT}
+              singbox_stable_time=$(echo "${latest}" | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "singbox_stable_version=${singbox_stable_version}" >> "${GITHUB_OUTPUT}"
+              echo "singbox_stable_time=${singbox_stable_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未获取到 sing-box Stable 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "singbox_stable_linux_tags=with_quic,with_utls,with_clash_api" >> ${GITHUB_OUTPUT}
-          echo "singbox_stable_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> ${GITHUB_OUTPUT}
+          echo "singbox_stable_linux_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
+          echo "singbox_stable_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `sing-box Stable` versions with current release
         id: compare
@@ -273,7 +281,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   singbox_stable_cross:
     runs-on: ubuntu-latest
@@ -349,19 +357,20 @@ jobs:
         id: version
         run: |
           while true; do
-            singbox_testing_version=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | .tag_name' | head -n 1 | sed 's/^v//')
-            singbox_testing_time=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | (.published_at // .created_at)' | head -n 1 | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            releases=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases)
+            singbox_testing_version=$(echo "${releases}" | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | .tag_name' | head -n 1 | sed 's/^v//')
             if [[ -n "${singbox_testing_version}" && "${singbox_testing_version}" != "null" ]]; then
-              echo "singbox_testing_version=${singbox_testing_version}" >> ${GITHUB_OUTPUT}
-              echo "singbox_testing_time=${singbox_testing_time}" >> ${GITHUB_OUTPUT}
+              singbox_testing_time=$(echo "${releases}" | jq -r '.[] | select(.tag_name | test("alpha|beta|rc")) | (.published_at // .created_at)' | head -n 1 | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "singbox_testing_version=${singbox_testing_version}" >> "${GITHUB_OUTPUT}"
+              echo "singbox_testing_time=${singbox_testing_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未获取到 sing-box Testing 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "singbox_testing_linux_tags=with_quic,with_utls,with_clash_api" >> ${GITHUB_OUTPUT}
-          echo "singbox_testing_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> ${GITHUB_OUTPUT}
+          echo "singbox_testing_linux_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
+          echo "singbox_testing_windows_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `sing-box Testing` versions with current release
         id: compare
@@ -376,7 +385,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   singbox_testing_cross:
     runs-on: ubuntu-latest
@@ -554,10 +563,10 @@ jobs:
         run: |
           if ls ./sing-box/* >/dev/null 2>&1; then
             echo "sing-box 文件夹内存在新内核文件，需要上传"
-            echo "singbox_exist=true" >> ${GITHUB_OUTPUT}
+            echo "singbox_exist=true" >> "${GITHUB_OUTPUT}"
           else
             echo "sing-box 文件夹内没有新内核文件，无需上传"
-            echo "singbox_exist=false" >> ${GITHUB_OUTPUT}
+            echo "singbox_exist=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Release and upload `sing-box` assets

@@ -162,8 +162,8 @@ curl -sS -o /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.c
 4. 执行 `sc`，进入 ShellCrash → 5 配置自动任务 → 1 添加自动任务，选择“8) 自动更新内核”和末尾处添加的定时任务，输入对应的数字并回车后可设置执行条件
 
 # 给作者加鸡腿
-<img src="https://github.com/user-attachments/assets/e640fdf6-0990-421f-8ec6-2d263b533b89" alt="支付宝" width="30%" />
-<img src="https://github.com/user-attachments/assets/470f501c-5a59-45d8-8e0f-6e034376f107" alt="微信" width="30%" />
+<img src="https://raw.githubusercontent.com/DustinWin/dustinwin.github.io/main/assets/img/pin/alipay.jpg" alt="支付宝" width="30%" />
+<img src="https://raw.githubusercontent.com/DustinWin/dustinwin.github.io/main/assets/img/pin/wechat.png" alt="微信" width="30%" />
 
 # 机场推荐
-[Bitz Net](https://red.bnaffred.com/#/register?code=HT0ALWZq)（仅次于一线机场，推荐打折时购买）  
+[Bitz Net](https://red.bnaffred.com/#/register?code=HT0ALWZq)（仅次于一线机场，推荐打折时购买）

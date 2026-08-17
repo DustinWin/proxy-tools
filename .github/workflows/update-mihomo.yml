@@ -25,7 +25,7 @@ jobs:
       - name: Get `Go` latest version
         id: go
         run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> ${GITHUB_OUTPUT}
+          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
 
   meta_version:
     runs-on: ubuntu-latest
@@ -40,19 +40,20 @@ jobs:
         id: version
         run: |
           while true; do
-            meta_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-            meta_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            latest=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest)
+            meta_version=$(echo "${latest}" | jq -r '.tag_name' | sed 's/^v//')
             if [[ -n "${meta_version}" && "${meta_version}" != "null" ]]; then
-              echo "meta_version=${meta_version}" >> ${GITHUB_OUTPUT}
-              echo "meta_time=${meta_time}" >> ${GITHUB_OUTPUT}
+              meta_time=$(echo "${latest}" | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "meta_version=${meta_version}" >> "${GITHUB_OUTPUT}"
+              echo "meta_time=${meta_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未成功获取到 mihomo Meta 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "meta_linux_tags=no_tailscale" >> ${GITHUB_OUTPUT}
-          echo "meta_windows_tags=with_gvisor" >> ${GITHUB_OUTPUT}
+          echo "meta_linux_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+          echo "meta_windows_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `mihomo Meta` versions with current release
         id: compare
@@ -67,7 +68,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   meta_cross:
     runs-on: ubuntu-latest
@@ -150,19 +151,20 @@ jobs:
         id: version
         run: |
           while true; do
-            alpha_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0].assets[].name' | perl -ne '/(alpha\-)([^.]+)/ && print "$1$2\n"' | head -n 1)
-            alpha_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0] | (.updated_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            releases=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases)
+            alpha_version=$(echo "${releases}" | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0].assets[].name' | perl -ne '/(alpha\-)([^.]+)/ && print "$1$2\n"' | head -n 1)
             if [[ -n "${alpha_version}" && "${alpha_version}" != "null" ]]; then
-              echo "alpha_version=${alpha_version}" >> ${GITHUB_OUTPUT}
-              echo "alpha_time=${alpha_time}" >> ${GITHUB_OUTPUT}
+              alpha_time=$(echo "${releases}" | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0] | (.updated_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "alpha_version=${alpha_version}" >> "${GITHUB_OUTPUT}"
+              echo "alpha_time=${alpha_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未成功获取到 mihomo Alpha 版本号，将在 10 秒后重试..."
             sleep 10
           done
 
-          echo "alpha_linux_tags=no_tailscale" >> ${GITHUB_OUTPUT}
-          echo "alpha_windows_tags=with_gvisor" >> ${GITHUB_OUTPUT}
+          echo "alpha_linux_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+          echo "alpha_windows_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
 
       - name: Compare `mihomo Alpha` versions with current release
         id: compare
@@ -177,7 +179,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   alpha_cross:
     runs-on: ubuntu-latest
@@ -318,10 +320,10 @@ jobs:
         run: |
           if ls ./mihomo/* >/dev/null 2>&1; then
             echo "mihomo 文件夹内存在新内核文件，需要上传"
-            echo "mihomo_exist=true" >> ${GITHUB_OUTPUT}
+            echo "mihomo_exist=true" >> "${GITHUB_OUTPUT}"
           else
             echo "mihomo 文件夹内没有新内核文件，无需上传"
-            echo "mihomo_exist=false" >> ${GITHUB_OUTPUT}
+            echo "mihomo_exist=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Release and upload `mihomo` assets

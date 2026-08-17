@@ -25,7 +25,7 @@ jobs:
       - name: Get `Go` latest version
         id: go
         run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> ${GITHUB_OUTPUT}
+          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
 
   node:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
       - name: Get `Node` latest version (LTS)
         id: node
         run: |
-          echo "version=$(curl -sSL https://nodejs.org/dist/index.json | jq -r 'map(select(.lts)) | .[0].version[1:]')" >> ${GITHUB_OUTPUT}
+          echo "version=$(curl -sSL https://nodejs.org/dist/index.json | jq -r 'map(select(.lts)) | .[0].version[1:]')" >> "${GITHUB_OUTPUT}"
 
   release_version:
     runs-on: ubuntu-latest
@@ -48,11 +48,12 @@ jobs:
         id: version
         run: |
           while true; do
-            release_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.tag_name')
-            release_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            latest=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest)
+            release_version=$(echo "${latest}" | jq -r '.tag_name')
             if [[ -n "${release_version}" && "${release_version}" != "null" ]]; then
-              echo "release_version=${release_version}" >> ${GITHUB_OUTPUT}
-              echo "release_time=${release_time}" >> ${GITHUB_OUTPUT}
+              release_time=$(echo "${latest}" | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "release_version=${release_version}" >> "${GITHUB_OUTPUT}"
+              echo "release_time=${release_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未成功获取到 AdGuard Home Release 版本号，将在 10 秒后重试..."
@@ -72,7 +73,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   release_cross:
     runs-on: ubuntu-latest
@@ -145,11 +146,12 @@ jobs:
         id: version
         run: |
           while true; do
-            beta_version=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0].tag_name')
-            beta_time=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases | jq -r '[.[] | select(.tag_name | contains("b"))][0] | (.published_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+            releases=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases)
+            beta_version=$(echo "${releases}" | jq -r '[.[] | select(.tag_name | contains("b"))][0].tag_name')
             if [[ -n "${beta_version}" && "${beta_version}" != "null" ]]; then
-              echo "beta_version=${beta_version}" >> ${GITHUB_OUTPUT}
-              echo "beta_time=${beta_time}" >> ${GITHUB_OUTPUT}
+              beta_time=$(echo "${releases}" | jq -r '[.[] | select(.tag_name | contains("b"))][0] | (.published_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              echo "beta_version=${beta_version}" >> "${GITHUB_OUTPUT}"
+              echo "beta_time=${beta_time}" >> "${GITHUB_OUTPUT}"
               break
             fi
             echo "未成功获取到 AdGuard Home Beta 版本号，将在 10 秒后重试..."
@@ -169,7 +171,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> ${GITHUB_OUTPUT}
+          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
 
   beta_cross:
     runs-on: ubuntu-latest
@@ -302,10 +304,10 @@ jobs:
         run: |
           if ls ./AdGuardHome/* >/dev/null 2>&1; then
             echo "AdGuard Home 文件夹内存在新内核文件，需要上传"
-            echo "adguardhome_exist=true" >> ${GITHUB_OUTPUT}
+            echo "adguardhome_exist=true" >> "${GITHUB_OUTPUT}"
           else
             echo "AdGuard Home 文件夹内没有新内核文件，无需上传"
-            echo "adguardhome_exist=false" >> ${GITHUB_OUTPUT}
+            echo "adguardhome_exist=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Release and upload `AdGuardHome` assets
