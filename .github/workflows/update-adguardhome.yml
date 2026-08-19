@@ -115,7 +115,6 @@ jobs:
         run: |
           go get go@${{ needs.go.outputs.go_version }}
           go mod tidy
-          go get -u
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
@@ -213,7 +212,6 @@ jobs:
         run: |
           go get go@${{ needs.go.outputs.go_version }}
           go mod tidy
-          go get -u
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
