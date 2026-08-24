@@ -17,16 +17,6 @@ permissions:
   contents: write
 
 jobs:
-  go:
-    runs-on: ubuntu-latest
-    outputs:
-      go_version: ${{ steps.go.outputs.version }}
-    steps:
-      - name: Get `Go` latest version
-        id: go
-        run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
-
   meta_version:
     runs-on: ubuntu-latest
     outputs:
@@ -93,7 +83,6 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
       - meta_version
     env:
       GOOS: ${{ matrix.goos }}
@@ -113,10 +102,16 @@ jobs:
           repository: MetaCubeX/mihomo
           ref: Meta
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Meta/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-download-base-url: 'https://github.com/MetaCubeX/go/releases/download/build'
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Update CA
         run: |
@@ -204,7 +199,6 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
       - alpha_version
     env:
       GOOS: ${{ matrix.goos }}
@@ -224,10 +218,16 @@ jobs:
           repository: MetaCubeX/mihomo
           ref: Alpha
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Alpha/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-download-base-url: 'https://github.com/MetaCubeX/go/releases/download/build'
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Update CA
         run: |

@@ -17,16 +17,6 @@ permissions:
   contents: write
 
 jobs:
-  go:
-    runs-on: ubuntu-latest
-    outputs:
-      go_version: ${{ steps.go.outputs.version }}
-    steps:
-      - name: Get `Go` latest version
-        id: go
-        run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
-
   ref1nd_stable_version:
     runs-on: ubuntu-latest
     outputs:
@@ -98,7 +88,6 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
       - ref1nd_stable_version
     env:
       GOOS: ${{ matrix.goos }}
@@ -117,10 +106,15 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-stable
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/reF1nd/sing-box/reF1nd-stable/.github/workflows/build.yml | grep 'go-version:' | head -n 1 | awk '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Build `sing-box reF1nd-Stable` core (Linux)
         if: ${{ matrix.goos == 'linux' }}
@@ -203,7 +197,6 @@ jobs:
       fail-fast: false
     needs:
       - ref1nd_testing_version
-      - go
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
@@ -221,10 +214,15 @@ jobs:
           repository: reF1nd/sing-box
           ref: reF1nd-testing
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/reF1nd/sing-box/reF1nd-testing/.github/workflows/build.yml | grep 'go-version:' | head -n 1 | awk '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Build `sing-box reF1nd-Testing` core (Linux)
         if: ${{ matrix.goos == 'linux' }}
@@ -306,7 +304,6 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
       - singbox_stable_version
     env:
       GOOS: ${{ matrix.goos }}
@@ -325,10 +322,15 @@ jobs:
           repository: SagerNet/sing-box
           ref: stable
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/SagerNet/sing-box/stable/.github/workflows/build.yml | grep 'go-version:' | head -n 1 | awk '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Build `sing-box Stable` core (Linux)
         if: ${{ matrix.goos == 'linux' }}
@@ -410,7 +412,6 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
       - singbox_testing_version
     env:
       GOOS: ${{ matrix.goos }}
@@ -429,10 +430,15 @@ jobs:
           repository: SagerNet/sing-box
           ref: testing
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/SagerNet/sing-box/testing/.github/workflows/build.yml | grep 'go-version:' | head -n 1 | awk '{print $2}')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
       - name: Build `sing-box Testing` core (Linux)
         if: ${{ matrix.goos == 'linux' }}

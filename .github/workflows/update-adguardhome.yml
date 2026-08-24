@@ -17,25 +17,21 @@ permissions:
   contents: write
 
 jobs:
-  go:
+  runtime:
     runs-on: ubuntu-latest
     outputs:
-      go_version: ${{ steps.go.outputs.version }}
+      go_version: ${{ steps.go.outputs.go_version }}
+      node_version: ${{ steps.node.outputs.node_version }}
     steps:
-      - name: Get `Go` latest version
+      - name: Get `Go` version
         id: go
         run: |
-          echo "version=$(curl -sSL https://raw.githubusercontent.com/actions/go-versions/update-versions-manifest-file/versions-manifest.json | jq -r '.[0].version')" >> "${GITHUB_OUTPUT}"
+          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'GO_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
-  node:
-    runs-on: ubuntu-latest
-    outputs:
-      node_version: ${{ steps.node.outputs.version }}
-    steps:
-      - name: Get `Node` latest version (LTS)
+      - name: Get `Node` version
         id: node
         run: |
-          echo "version=$(curl -sSL https://nodejs.org/dist/index.json | jq -r 'map(select(.lts)) | .[0].version[1:]')" >> "${GITHUB_OUTPUT}"
+          echo "node_version=$(curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
   release_version:
     runs-on: ubuntu-latest
@@ -95,8 +91,7 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
-      - node
+      - runtime
       - release_version
     env:
       release_VERSION: ${{ needs.release_version.outputs.release_version }}
@@ -109,18 +104,17 @@ jobs:
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ needs.runtime.outputs.go_version }}
 
       - name: Adapt `Go` version
         run: |
-          go get go@${{ needs.go.outputs.go_version }}
+          go get go@${{ needs.runtime.outputs.go_version }}
           go mod tidy
-          go get -u
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ needs.node.outputs.node_version }}
+          node-version: ${{ needs.runtime.outputs.node_version }}
 
       - name: Setup `Snapcraft`
         run: |
@@ -193,8 +187,7 @@ jobs:
 
       fail-fast: false
     needs:
-      - go
-      - node
+      - runtime
       - beta_version
     env:
       beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
@@ -207,18 +200,17 @@ jobs:
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.go.outputs.go_version }}
+          go-version: ${{ needs.runtime.outputs.go_version }}
 
       - name: Adapt `Go` version
         run: |
-          go get go@${{ needs.go.outputs.go_version }}
+          go get go@${{ needs.runtime.outputs.go_version }}
           go mod tidy
-          go get -u
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ needs.node.outputs.node_version }}
+          node-version: ${{ needs.runtime.outputs.node_version }}
 
       - name: Setup `Snapcraft`
         run: |
