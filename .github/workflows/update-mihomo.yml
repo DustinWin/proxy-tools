@@ -21,8 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       meta_version: ${{ steps.version.outputs.meta_version }}
-      meta_linux_tags: ${{ steps.version.outputs.meta_linux_tags }}
-      meta_windows_tags: ${{ steps.version.outputs.meta_windows_tags }}
       meta_time: ${{ steps.version.outputs.meta_time}}
       meta_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
@@ -42,9 +40,6 @@ jobs:
             sleep 10
           done
 
-          echo "meta_linux_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
-          echo "meta_windows_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
-
       - name: Compare `mihomo Meta` versions with current release
         id: compare
         run: |
@@ -58,7 +53,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 v${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
+          echo "skip_update=${skip_update}" >> "${GITHUB_OUTPUT}"
 
   meta_cross:
     runs-on: ubuntu-latest
@@ -93,8 +88,6 @@ jobs:
       CGO_ENABLED: 0
       meta_VERSION: ${{ needs.meta_version.outputs.meta_version }}
       meta_TIME: ${{ needs.meta_version.outputs.meta_time }}
-      meta_linux_TAGS: ${{ needs.meta_version.outputs.meta_linux_tags }}
-      meta_windows_TAGS: ${{ needs.meta_version.outputs.meta_windows_tags }}
     steps:
       - name: Checkout `Meta`
         uses: actions/checkout@v7
@@ -119,13 +112,17 @@ jobs:
           sudo update-ca-certificates
           cp -f /etc/ssl/certs/ca-certificates.crt component/ca/ca-certificates.crt
 
-      - name: Build `mihomo Meta` core (Linux)
-        if: ${{ matrix.goos == 'linux' }}
-        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${meta_linux_TAGS}" -o meta
+      - name: Set `build tags`
+        id: tags
+        run: |
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
+            echo "build_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+          elif [[ "${{ matrix.goos }}" == "windows" ]]; then
+            echo "build_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: Build `mihomo Meta` core (Windows)
-        if: ${{ matrix.goos == 'windows' }}
-        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${meta_windows_TAGS}" -o meta
+      - name: Build `mihomo Meta` core
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${{ steps.tags.outputs.build_tags }}" -o meta
 
       - name: Upload files to workspace
         uses: actions/upload-artifact@v4
@@ -137,8 +134,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       alpha_version: ${{ steps.version.outputs.alpha_version }}
-      alpha_linux_tags: ${{ steps.version.outputs.alpha_linux_tags }}
-      alpha_windows_tags: ${{ steps.version.outputs.alpha_windows_tags }}
       alpha_time: ${{ steps.version.outputs.alpha_time}}
       alpha_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
@@ -158,9 +153,6 @@ jobs:
             sleep 10
           done
 
-          echo "alpha_linux_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
-          echo "alpha_windows_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
-
       - name: Compare `mihomo Alpha` versions with current release
         id: compare
         run: |
@@ -174,7 +166,7 @@ jobs:
             echo "当前 ${name} 版本较低，需要更新最新版本至 ${version}"
             skip_update=false
           fi
-          echo "skip_update=$skip_update" >> "${GITHUB_OUTPUT}"
+          echo "skip_update=${skip_update}" >> "${GITHUB_OUTPUT}"
 
   alpha_cross:
     runs-on: ubuntu-latest
@@ -209,8 +201,6 @@ jobs:
       CGO_ENABLED: 0
       alpha_VERSION: ${{ needs.alpha_version.outputs.alpha_version }}
       alpha_TIME: ${{ needs.alpha_version.outputs.alpha_time }}
-      alpha_linux_TAGS: ${{ needs.alpha_version.outputs.alpha_linux_tags }}
-      alpha_windows_TAGS: ${{ needs.alpha_version.outputs.alpha_windows_tags }}
     steps:
       - name: Checkout `Alpha`
         uses: actions/checkout@v7
@@ -235,13 +225,17 @@ jobs:
           sudo update-ca-certificates
           cp -f /etc/ssl/certs/ca-certificates.crt component/ca/ca-certificates.crt
 
-      - name: Build `mihomo Alpha` core (Linux)
-        if: ${{ matrix.goos == 'linux' }}
-        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${alpha_linux_TAGS}" -o alpha
+      - name: Set `build tags`
+        id: tags
+        run: |
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
+            echo "build_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+          elif [[ "${{ matrix.goos }}" == "windows" ]]; then
+            echo "build_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: Build `mihomo Alpha` core (Windows)
-        if: ${{ matrix.goos == 'windows' }}
-        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${alpha_windows_TAGS}" -o alpha
+      - name: Build `mihomo Alpha` core
+        run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${{ steps.tags.outputs.build_tags }}" -o alpha
 
       - name: Upload files to workspace
         uses: actions/upload-artifact@v4
