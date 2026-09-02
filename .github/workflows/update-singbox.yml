@@ -67,12 +67,12 @@ jobs:
       matrix:
         include:
           # Linux
-          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: musl }
-          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: musl }
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: purego }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: purego }
           - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
           - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
-          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7, variant: musl }
-          - { name: linux-arm64, goos: linux, goarch: arm64, variant: musl }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64, variant: purego }
           - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
           - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
           - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
@@ -112,9 +112,7 @@ jobs:
       - name: Set `build tags`
         id: tags
         run: |
-          if [[ "${{ matrix.goos }}" == "linux" && "${{ matrix.variant }}" == "musl" ]]; then
-            echo "build_tags=with_quic,with_utls,with_clash_api,with_musl" >> "${GITHUB_OUTPUT}"
-          elif [[ "${{ matrix.goos }}" == "linux" ]]; then
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
             echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
@@ -174,12 +172,12 @@ jobs:
       matrix:
         include:
           # Linux
-          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: musl }
-          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: musl }
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: purego }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: purego }
           - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
           - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
-          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7, variant: musl }
-          - { name: linux-arm64, goos: linux, goarch: arm64, variant: musl }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64, variant: purego }
           - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
           - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
           - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
@@ -219,9 +217,7 @@ jobs:
       - name: Set `build tags`
         id: tags
         run: |
-          if [[ "${{ matrix.goos }}" == "linux" && "${{ matrix.variant }}" == "musl" ]]; then
-            echo "build_tags=with_quic,with_utls,with_clash_api,with_musl" >> "${GITHUB_OUTPUT}"
-          elif [[ "${{ matrix.goos }}" == "linux" ]]; then
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
             echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
@@ -281,12 +277,12 @@ jobs:
       matrix:
         include:
           # Linux
-          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: musl }
-          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: musl }
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: purego }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: purego }
           - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
           - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
-          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7, variant: musl }
-          - { name: linux-arm64, goos: linux, goarch: arm64, variant: musl }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64, variant: purego }
           - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
           - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
           - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
@@ -326,9 +322,7 @@ jobs:
       - name: Set `build tags`
         id: tags
         run: |
-          if [[ "${{ matrix.goos }}" == "linux" && "${{ matrix.variant }}" == "musl" ]]; then
-            echo "build_tags=with_quic,with_utls,with_clash_api,with_musl" >> "${GITHUB_OUTPUT}"
-          elif [[ "${{ matrix.goos }}" == "linux" ]]; then
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
             echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
@@ -388,12 +382,12 @@ jobs:
       matrix:
         include:
           # Linux
-          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: musl }
-          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: musl }
+          - { name: linux-amd64-v1, goos: linux, goarch: amd64, goamd64: v1, variant: purego }
+          - { name: linux-amd64-v3, goos: linux, goarch: amd64, goamd64: v3, variant: purego }
           - { name: linux-armv5, goos: linux, goarch: arm, goarm: 5 }
           - { name: linux-armv6, goos: linux, goarch: arm, goarm: 6 }
-          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7, variant: musl }
-          - { name: linux-arm64, goos: linux, goarch: arm64, variant: musl }
+          - { name: linux-armv7, goos: linux, goarch: arm, goarm: 7 }
+          - { name: linux-arm64, goos: linux, goarch: arm64, variant: purego }
           - { name: linux-mips-softfloat, goos: linux, goarch: mips, gomips: softfloat }
           - { name: linux-mipsle-softfloat, goos: linux, goarch: mipsle, gomips: softfloat }
           - { name: linux-mipsle-hardfloat, goos: linux, goarch: mipsle, gomips: hardfloat }
@@ -433,9 +427,7 @@ jobs:
       - name: Set `build tags`
         id: tags
         run: |
-          if [[ "${{ matrix.goos }}" == "linux" && "${{ matrix.variant }}" == "musl" ]]; then
-            echo "build_tags=with_quic,with_utls,with_clash_api,with_musl" >> "${GITHUB_OUTPUT}"
-          elif [[ "${{ matrix.goos }}" == "linux" ]]; then
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
             echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
