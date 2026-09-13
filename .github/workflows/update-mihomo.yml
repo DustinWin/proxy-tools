@@ -2,7 +2,8 @@ name: Update mihomo
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 17 * * *"
+    - cron: "0 1 * * *"
+      timezone: "Asia/Shanghai"
   push:
     branches:
       - main
@@ -28,7 +29,7 @@ jobs:
         id: version
         run: |
           while true; do
-            latest=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest)
+            latest=$(curl -fsSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest)
             meta_version=$(echo "${latest}" | jq -r '.tag_name' | sed 's/^v//')
             if [[ -n "${meta_version}" && "${meta_version}" != "null" ]]; then
               meta_time=$(echo "${latest}" | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
@@ -43,9 +44,9 @@ jobs:
       - name: Compare `mihomo Meta` versions with current release
         id: compare
         run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
+          current_body=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
           arch="mihomo Meta|${{ steps.version.outputs.meta_version }}|${{ steps.version.outputs.meta_time }}"
-          IFS="|" read -r name version time <<< "$arch"
+          IFS="|" read -r name version time <<< "${arch}"
           if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
             echo "当前 ${name} 版本已是最新版本 v${version}，无需更新"
             skip_update=true
@@ -98,7 +99,7 @@ jobs:
       - name: Get `Go` version
         id: go
         run: |
-          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Meta/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
+          echo "go_version=$(curl -fsSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Meta/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
 
       - name: Setup `Go`
         uses: actions/setup-go@v7
@@ -141,7 +142,7 @@ jobs:
         id: version
         run: |
           while true; do
-            releases=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases)
+            releases=$(curl -fsSL https://api.github.com/repos/MetaCubeX/mihomo/releases)
             alpha_version=$(echo "${releases}" | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0].assets[].name' | perl -ne '/(alpha\-)([^.]+)/ && print "$1$2\n"' | head -n 1)
             if [[ -n "${alpha_version}" && "${alpha_version}" != "null" ]]; then
               alpha_time=$(echo "${releases}" | jq -r '[.[] | select(.tag_name=="Prerelease-Alpha")][0] | (.updated_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
@@ -156,9 +157,9 @@ jobs:
       - name: Compare `mihomo Alpha` versions with current release
         id: compare
         run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
+          current_body=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/mihomo" | jq -r '.body // ""')
           arch="mihomo Alpha|${{ steps.version.outputs.alpha_version }}|${{ steps.version.outputs.alpha_time }}"
-          IFS="|" read -r name version time <<< "$arch"
+          IFS="|" read -r name version time <<< "${arch}"
           if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
             echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
             skip_update=true
@@ -211,7 +212,7 @@ jobs:
       - name: Get `Go` version
         id: go
         run: |
-          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Alpha/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
+          echo "go_version=$(curl -fsSL https://raw.githubusercontent.com/MetaCubeX/mihomo/Alpha/.github/workflows/build.yml | sed -n "/go-version: '/p" | awk -F "'" '{print $2}')" >> "${GITHUB_OUTPUT}"
 
       - name: Setup `Go`
         uses: actions/setup-go@v7

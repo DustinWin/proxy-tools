@@ -2,7 +2,8 @@ name: Update AdGuard Home
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 18 * * *"
+    - cron: "30 2 * * *"
+      timezone: "Asia/Shanghai"
   push:
     branches:
       - main
@@ -26,12 +27,12 @@ jobs:
       - name: Get `Go` version
         id: go
         run: |
-          echo "go_version=$(curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'GO_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
+          echo "go_version=$(curl -fsSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'GO_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
       - name: Get `Node` version
         id: node
         run: |
-          echo "node_version=$(curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
+          echo "node_version=$(curl -fsSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
   release_version:
     runs-on: ubuntu-latest
@@ -44,7 +45,7 @@ jobs:
         id: version
         run: |
           while true; do
-            latest=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest)
+            latest=$(curl -fsSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest)
             release_version=$(echo "${latest}" | jq -r '.tag_name')
             if [[ -n "${release_version}" && "${release_version}" != "null" ]]; then
               release_time=$(echo "${latest}" | jq -r '.published_at // .created_at' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
@@ -59,9 +60,9 @@ jobs:
       - name: Compare `AdGuard Home Release` version with current release
         id: compare
         run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
+          current_body=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
           arch="AdGuard Home Release|${{ steps.version.outputs.release_version }}|${{ steps.version.outputs.release_time }}"
-          IFS="|" read -r name version time <<< "$arch"
+          IFS="|" read -r name version time <<< "${arch}"
           if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
             echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
             skip_update=true
@@ -140,7 +141,7 @@ jobs:
         id: version
         run: |
           while true; do
-            releases=$(curl -sSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases)
+            releases=$(curl -fsSL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases)
             beta_version=$(echo "${releases}" | jq -r '[.[] | select(.tag_name | contains("b"))][0].tag_name')
             if [[ -n "${beta_version}" && "${beta_version}" != "null" ]]; then
               beta_time=$(echo "${releases}" | jq -r '[.[] | select(.tag_name | contains("b"))][0] | (.published_at // .created_at)' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
@@ -155,9 +156,9 @@ jobs:
       - name: Compare `AdGuard Home Beta` version with current release
         id: compare
         run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
+          current_body=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/AdGuardHome" | jq -r '.body // ""')
           arch="AdGuard Home Beta|${{ steps.version.outputs.beta_version }}|${{ steps.version.outputs.beta_time }}"
-          IFS="|" read -r name version time <<< "$arch"
+          IFS="|" read -r name version time <<< "${arch}"
           if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
             echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
             skip_update=true

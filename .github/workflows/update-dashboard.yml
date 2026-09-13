@@ -2,7 +2,8 @@ name: Update Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "00 18 * * *"
+    - cron: "0 2 * * *"
+      timezone: "Asia/Shanghai"
   push:
     branches:
       - main
@@ -26,21 +27,21 @@ jobs:
       - name: Set variables
         run: |
           while true; do
-            yacd_meta_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/Yacd-meta/releases/latest | jq -r '.tag_name')
-            metacubexd_version=$(curl -sSL https://api.github.com/repos/MetaCubeX/metacubexd/releases/latest | jq -r '.tag_name')
-            zashboard_version=$(curl -sSL https://api.github.com/repos/Zephyruso/zashboard/releases/latest | jq -r '.tag_name')
-            singbox_dashboard_version=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box-dashboard/commits/gh-pages | jq -r '.sha[:7]')
+            yacd_meta_version=$(curl -fsSL https://api.github.com/repos/MetaCubeX/Yacd-meta/releases/latest | jq -r '.tag_name')
+            metacubexd_version=$(curl -fsSL https://api.github.com/repos/MetaCubeX/metacubexd/releases/latest | jq -r '.tag_name')
+            zashboard_version=$(curl -fsSL https://api.github.com/repos/Zephyruso/zashboard/releases/latest | jq -r '.tag_name')
+            singbox_dashboard_version=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box-dashboard/commits/gh-pages | jq -r '.sha[:7]')
             if [[ -n "${yacd_meta_version}" && "${yacd_meta_version}" != "null" && -n "${metacubexd_version}" && "${metacubexd_version}" != "null" && -n "${zashboard_version}" && "${zashboard_version}" != "null" && -n "${singbox_dashboard_version}" && "${singbox_dashboard_version}" != "null" ]]; then
-              yacd_meta_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/Yacd-meta/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              yacd_meta_time=$(curl -fsSL https://api.github.com/repos/MetaCubeX/Yacd-meta/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
               echo "yacd_meta_version=${yacd_meta_version}" >> "${GITHUB_ENV}"
               echo "yacd_meta_time=${yacd_meta_time}" >> "${GITHUB_ENV}"
-              metacubexd_time=$(curl -sSL https://api.github.com/repos/MetaCubeX/metacubexd/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              metacubexd_time=$(curl -fsSL https://api.github.com/repos/MetaCubeX/metacubexd/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
               echo "metacubexd_version=${metacubexd_version}" >> "${GITHUB_ENV}"
               echo "metacubexd_time=${metacubexd_time}" >> "${GITHUB_ENV}"
-              zashboard_time=$(curl -sSL https://api.github.com/repos/Zephyruso/zashboard/commits/gh-pages-cdn-fonts | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              zashboard_time=$(curl -fsSL https://api.github.com/repos/Zephyruso/zashboard/commits/gh-pages-cdn-fonts | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
               echo "zashboard_version=${zashboard_version}" >> "${GITHUB_ENV}"
               echo "zashboard_time=${zashboard_time}" >> "${GITHUB_ENV}"
-              singbox_dashboard_time=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box-dashboard/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
+              singbox_dashboard_time=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box-dashboard/commits/gh-pages | jq -r '.commit.committer.date' | xargs -I {} date -d '{} +8 hours' '+%Y-%m-%d')
               echo "singbox_dashboard_version=${singbox_dashboard_version}" >> "${GITHUB_ENV}"
               echo "singbox_dashboard_time=${singbox_dashboard_time}" >> "${GITHUB_ENV}"
               break
@@ -52,7 +53,7 @@ jobs:
 
       - name: Compare `Dashboard` versions with current release
         run: |
-          current_body=$(curl -sSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/Dashboard" | jq -r '.body // ""')
+          current_body=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/Dashboard" | jq -r '.body // ""')
           archs=(
             "Yacd-meta|${yacd_meta_version}|${yacd_meta_time}"
             "metacubexd|${metacubexd_version}|${metacubexd_time}"
@@ -60,7 +61,7 @@ jobs:
             "sing-box dashboard|${singbox_dashboard_version}|${singbox_dashboard_time}"
           )
           for arch in "${archs[@]}"; do
-            IFS="|" read -r name version time <<< "$arch"
+            IFS="|" read -r name version time <<< "${arch}"
             var_name="${name//[^a-zA-Z0-9_]/_}_skip_release"
             if echo "${current_body}" | grep -q "${name}.*${version}.*${time}"; then
               echo "当前 ${name} 版本已是最新版本 ${version}，无需更新"
@@ -77,7 +78,7 @@ jobs:
         if: ${{ env.Yacd_meta_skip_release != 'true' }}
         run: |
           mkdir -p ./Dashboard/ ./tmp/Yacd-meta/
-          curl -sS -o ./tmp/Yacd-meta/gh-pages.zip -L https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip
+          curl -fsS -o ./tmp/Yacd-meta/gh-pages.zip -L https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip
           unzip -q -o ./tmp/Yacd-meta/gh-pages.zip -d ./tmp/Yacd-meta/
           cd ./tmp/Yacd-meta/Yacd-meta-gh-pages/
           tar -czf ../../../Dashboard/Yacd-meta.tar.gz *
@@ -86,7 +87,7 @@ jobs:
         if: ${{ env.metacubexd_skip_release != 'true' }}
         run: |
           mkdir -p ./Dashboard/ ./tmp/metacubexd/
-          curl -sS -o ./tmp/metacubexd/gh-pages.zip -L https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip
+          curl -fsS -o ./tmp/metacubexd/gh-pages.zip -L https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip
           unzip -q -o ./tmp/metacubexd/gh-pages.zip -d ./tmp/metacubexd/
           cd ./tmp/metacubexd/metacubexd-gh-pages/
           tar -czf ../../../Dashboard/metacubexd.tar.gz *
@@ -95,7 +96,7 @@ jobs:
         if: ${{ env.zashboard_skip_release != 'true' }}
         run: |
           mkdir -p ./Dashboard/ ./tmp/zashboard/
-          curl -sS -o ./tmp/zashboard/gh-pages.zip -L https://github.com/Zephyruso/zashboard/archive/gh-pages-cdn-fonts.zip
+          curl -fsS -o ./tmp/zashboard/gh-pages.zip -L https://github.com/Zephyruso/zashboard/archive/gh-pages-cdn-fonts.zip
           unzip -q -o ./tmp/zashboard/gh-pages.zip -d ./tmp/zashboard/
           cd ./tmp/zashboard/zashboard-gh-pages-cdn-fonts/
           tar -czf ../../../Dashboard/zashboard.tar.gz *
@@ -104,7 +105,7 @@ jobs:
         if: ${{ env.sing_box_dashboard_skip_release != 'true' }}
         run: |
           mkdir -p ./Dashboard/ ./tmp/sing-box-dashboard/
-          curl -sS -o ./tmp/sing-box-dashboard/gh-pages.zip -L https://github.com/SagerNet/sing-box-dashboard/archive/gh-pages.zip
+          curl -fsS -o ./tmp/sing-box-dashboard/gh-pages.zip -L https://github.com/SagerNet/sing-box-dashboard/archive/gh-pages.zip
           unzip -q -o ./tmp/sing-box-dashboard/gh-pages.zip -d ./tmp/sing-box-dashboard/
           cd ./tmp/sing-box-dashboard/sing-box-dashboard-gh-pages/
           tar -czf ../../../Dashboard/sing-box-dashboard.tar.gz *

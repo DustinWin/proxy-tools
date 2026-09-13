@@ -2,7 +2,8 @@ name: Delete old workflows
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 6 * * *'
+      timezone: "Asia/Shanghai"
 
 permissions:
   actions: write
