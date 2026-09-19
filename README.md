@@ -166,4 +166,5 @@ curl -fo /data/AdGuardHome/AdGuardHome -L https://ghfast.top/https://github.com/
 <img src="https://raw.githubusercontent.com/DustinWin/dustinwin.github.io/main/assets/img/pin/wechat.png" alt="微信" width="30%" />
 
 # 机场推荐
-[Bitz Net](https://red.bnaffred.com/#/register?code=HT0ALWZq)（仅次于一线机场，推荐打折时购买）
+[Bitz Net](https://red.bnaffred.com/#/register?code=HT0ALWZq)（仅次于一线机场，推荐打折时购买）  
+6 折优惠码：`26SURVEY6`（有效期暂不确定）
