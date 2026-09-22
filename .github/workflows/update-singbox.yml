@@ -116,7 +116,7 @@ jobs:
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=with_quic,with_utls,with_clash_api,with_tailscale,with_gvisor" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `sing-box reF1nd-Stable` core
@@ -221,7 +221,7 @@ jobs:
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `sing-box reF1nd-Testing` core
@@ -326,7 +326,7 @@ jobs:
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=with_quic,with_utls,with_clash_api,with_tailscale,with_gvisor" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `sing-box Stable` core
@@ -431,7 +431,7 @@ jobs:
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
             echo "build_tags=with_quic,with_utls,with_clash_api" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor,with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=with_quic,with_utls,with_clash_api,with_tailscale" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `sing-box Testing` core

@@ -10,9 +10,10 @@
 **注：**
 - 1. 本教程中的下载链接以 CPU 架构 ARM64 为例，请注意修改链接后缀
 - 2. 查看 CPU 架构可连接 SSH 后执行命令 `uname -ms`，若执行结果是“linux aarch64”，就是搭载的 ARM64 架构
-- 3. 本项目中 mihomo 内核和 sing-box 内核 Linux 端已精简 `gvisor` 和 `tailscale`
-- 4. 本项目中 mihomo 内核、sing-box 内核和 AdGuard Home 的 Linux 端均采用 [UPX](https://github.com/upx/upx) 压缩方式
-- 5. 对下载源的说明，可[点此](https://proxy-tutorials.dustinwin.cc.cd/about/#%E5%AF%B9%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%9A%84%E8%AF%B4%E6%98%8E)了解
+- 3. 本项目中 mihomo 内核 Linux 端已精简 [fake_tcp](https://wiki.metacubex.one/config/proxies/hysteria/)（Hysteria 1）、[Tailscale](https://wiki.metacubex.one/config/proxies/tailscale/)、[ZeroTier](https://wiki.metacubex.one/config/proxies/zerotier/)、[EasyTier](https://wiki.metacubex.one/config/proxies/easytier/) 和 [gvisor](https://wiki.metacubex.one/config/inbound/tun/#stack)
+- 4. sing-box 内核 Linux 端已精简 [Tailscale](https://sing-box.sagernet.org/zh/configuration/endpoint/tailscale/) 和 [gvisor](https://sing-box.sagernet.org/configuration/inbound/tun/#stack)
+- 5. 本项目中 mihomo 内核、sing-box 内核和 AdGuard Home 的 Linux 端均采用 [UPX](https://github.com/upx/upx) 压缩方式
+- 6. 对下载源的说明，可[点此](https://proxy-tutorials.dustinwin.cc.cd/about/#%E5%AF%B9%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%9A%84%E8%AF%B4%E6%98%8E)了解
 
 # 二、 使用方法
 ## 1. 导入内核（以 [ShellCrash](https://github.com/juewuy/ShellCrash) 导入内核为例）

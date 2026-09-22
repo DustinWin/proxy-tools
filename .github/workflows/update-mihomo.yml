@@ -117,9 +117,9 @@ jobs:
         id: tags
         run: |
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
-            echo "build_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=no_fake_tcp,no_tailscale,no_zerotier,no_easytier" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=no_fake_tcp,with_gvisor" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `mihomo Meta` core
@@ -230,9 +230,9 @@ jobs:
         id: tags
         run: |
           if [[ "${{ matrix.goos }}" == "linux" ]]; then
-            echo "build_tags=no_tailscale" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=no_fake_tcp,no_tailscale,no_zerotier,no_easytier" >> "${GITHUB_OUTPUT}"
           elif [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "build_tags=with_gvisor" >> "${GITHUB_OUTPUT}"
+            echo "build_tags=no_fake_tcp,with_gvisor" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Build `mihomo Alpha` core
