@@ -5,7 +5,7 @@
 2. [reF1nd-Stable 版](https://github.com/reF1nd/sing-box/tree/reF1nd-stable)和 [reF1nd-Testing 版](https://github.com/reF1nd/sing-box/tree/reF1nd-testing)内核和 Android 安装包（支持[提供者](https://sing-boxr.dustinwin.cc.cd/zh/configuration/provider/) `providers`，类似于 mihomo 内核的[代理集合](https://wiki.metacubex.one/config/proxy-providers/) `proxy-providers`）
 3. sing-box [Stable 版](https://github.com/SagerNet/sing-box/tree/stable)和 [Testing 版](https://github.com/SagerNet/sing-box/tree/testing)内核
 4. Dashboard 面板：[Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)、[metacubexd](https://github.com/MetaCubeX/metacubexd)、[zashboard](https://github.com/Zephyruso/zashboard) 和 [sing-box dashboard](https://github.com/SagerNet/sing-box-dashboard)
-5. AdGuard Home [Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)和 [Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)
+5. AdGuard Home Release 版和 Beta 版
 
 **注：**
 - 1. 本教程中的下载链接以 CPU 架构 ARM64 为例，请注意修改链接后缀

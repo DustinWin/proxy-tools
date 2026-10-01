@@ -18,27 +18,12 @@ permissions:
   contents: write
 
 jobs:
-  runtime:
-    runs-on: ubuntu-latest
-    outputs:
-      go_version: ${{ steps.go.outputs.go_version }}
-      node_version: ${{ steps.node.outputs.node_version }}
-    steps:
-      - name: Get `Go` version
-        id: go
-        run: |
-          echo "go_version=$(curl -fsSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'GO_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
-
-      - name: Get `Node` version
-        id: node
-        run: |
-          echo "node_version=$(curl -fsSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/.github/workflows/workflow.yaml | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
-
   release_version:
     runs-on: ubuntu-latest
     outputs:
       release_version: ${{ steps.version.outputs.release_version }}
       release_time: ${{ steps.version.outputs.release_time }}
+      release_branch: ${{ steps.branch.outputs.release_branch }}
       release_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
       - name: Get `AdGuard Home Release` version and time
@@ -72,6 +57,11 @@ jobs:
           fi
           echo "skip_update=${skip_update}" >> "${GITHUB_OUTPUT}"
 
+      - name: Get branch for release version
+        id: branch
+        run: |
+          echo "release_branch=$(echo "${{ steps.version.outputs.release_version }}" | sed -E 's/^((v[0-9]+\.[0-9]+)).*/beta-\1/')" >> "${GITHUB_OUTPUT}"
+
   release_cross:
     runs-on: ubuntu-latest
     if: ${{ needs.release_version.outputs.release_skip_update != 'true' }}
@@ -92,37 +82,42 @@ jobs:
 
       fail-fast: false
     needs:
-      - runtime
       - release_version
     env:
       release_VERSION: ${{ needs.release_version.outputs.release_version }}
+      release_BRANCH: ${{ needs.release_version.outputs.release_branch }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
         uses: actions/checkout@v7
         with:
           repository: AdguardTeam/AdGuardHome
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -fsSL "https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/${{ env.release_BRANCH }}/go.mod" | grep -oP 'go \K\d+\.\d+\.\d+')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.runtime.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
-      - name: Adapt `Go` version
+      - name: Get `Node` version
+        id: node
         run: |
-          go get go@${{ needs.runtime.outputs.go_version }}
-          go mod tidy
+          echo "node_version=$(curl -fsSL "https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/${{ env.release_BRANCH }}/.github/workflows/build.yml" | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ needs.runtime.outputs.node_version }}
+          node-version: ${{ steps.node.outputs.node_version }}
 
       - name: Setup `Snapcraft`
         run: |
           sudo snap install snapcraft --classic
 
       - name: Build `AdGuard Home Release`
-        run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=release VERSION=${{ env.release_VERSION }} GOTOOLCHAIN=local build-release
+        run: make SIGN=0 VERBOSE=1 ARCH="${{ matrix.goarch }}" OS="${{ matrix.goos }}" CHANNEL=release VERSION="${{ env.release_VERSION }}" build-release
 
       - name: Upload files to workspace
         uses: actions/upload-artifact@v7
@@ -135,6 +130,7 @@ jobs:
     outputs:
       beta_version: ${{ steps.version.outputs.beta_version }}
       beta_time: ${{ steps.version.outputs.beta_time }}
+      beta_branch: ${{ steps.branch.outputs.beta_branch }}
       beta_skip_update: ${{ steps.compare.outputs.skip_update }}
     steps:
       - name: Get `AdGuard Home Beta` version and time
@@ -168,6 +164,11 @@ jobs:
           fi
           echo "skip_update=${skip_update}" >> "${GITHUB_OUTPUT}"
 
+      - name: Set beta branch
+        id: branch
+        run: |
+          echo "beta_branch=$(echo "${{ steps.version.outputs.beta_version }}" | sed -E 's/^((v[0-9]+\.[0-9]+)).*/beta-\1/')" >> "${GITHUB_OUTPUT}"
+
   beta_cross:
     runs-on: ubuntu-latest
     if: ${{ needs.beta_version.outputs.beta_skip_update != 'true' }}
@@ -188,37 +189,42 @@ jobs:
 
       fail-fast: false
     needs:
-      - runtime
       - beta_version
     env:
       beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
+      beta_BRANCH: ${{ needs.beta_version.outputs.beta_branch }}
     steps:
       - name: Checkout `AdguardTeam/AdGuardHome`
         uses: actions/checkout@v7
         with:
           repository: AdguardTeam/AdGuardHome
 
+      - name: Get `Go` version
+        id: go
+        run: |
+          echo "go_version=$(curl -fsSL "https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/${{ env.beta_BRANCH }}/go.mod" | grep -oP 'go \K\d+\.\d+\.\d+')" >> "${GITHUB_OUTPUT}"
+
       - name: Setup `Go`
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ needs.runtime.outputs.go_version }}
+          go-version: ${{ steps.go.outputs.go_version }}
 
-      - name: Adapt `Go` version
+      - name: Get `Node` version
+        id: node
         run: |
-          go get go@${{ needs.runtime.outputs.go_version }}
-          go mod tidy
+          echo "node_version=$(curl -fsSL "https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/${{ env.beta_BRANCH }}/.github/workflows/workflow.yaml" | sed -n "/'NODE_VERSION': '/p" | awk -F "'" '{print $4}')" >> "${GITHUB_OUTPUT}"
 
       - name: Setup `Node`
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ needs.runtime.outputs.node_version }}
+          node-version: ${{ steps.node.outputs.node_version }}
 
       - name: Setup `Snapcraft`
         run: |
           sudo snap install snapcraft --classic
 
       - name: Build `AdGuard Home Beta`
-        run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=beta VERSION=${{ env.beta_VERSION }} GOTOOLCHAIN=local build-release
+        run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=beta VERSION=${{ env.beta_VERSION }} build-release
 
       - name: Upload files to workspace
         uses: actions/upload-artifact@v7
@@ -237,9 +243,11 @@ jobs:
     env:
       release_VERSION: ${{ needs.release_version.outputs.release_version }}
       release_TIME: ${{ needs.release_version.outputs.release_time }}
+      release_BRANCH: ${{ needs.release_version.outputs.release_branch }}
       release_SKIP_UPDATE: ${{ needs.release_version.outputs.release_skip_update }}
       beta_VERSION: ${{ needs.beta_version.outputs.beta_version }}
       beta_TIME: ${{ needs.beta_version.outputs.beta_time }}
+      beta_BRANCH: ${{ needs.beta_version.outputs.beta_branch }}
       beta_SKIP_UPDATE: ${{ needs.beta_version.outputs.beta_skip_update }}
     steps:
       - name: Clone Repository
@@ -312,7 +320,7 @@ jobs:
           tag: AdGuardHome
           overwrite: true
           body: |
-            更新 [AdGuard Home Release 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.107)至 ${{ env.release_VERSION }}，发布于 ${{ env.release_TIME }}
-            更新 [AdGuard Home Beta 版](https://github.com/AdguardTeam/AdGuardHome/tree/beta-v0.108)至 ${{ env.beta_VERSION }}，发布于 ${{ env.beta_TIME }}
+            更新 [AdGuard Home Release 版](https://github.com/AdguardTeam/AdGuardHome)（${{ env.release_BRANCH }} 分支）至 ${{ env.release_VERSION }}，发布于 ${{ env.release_TIME }}
+            更新 [AdGuard Home Beta 版](https://github.com/AdguardTeam/AdGuardHome)（${{ env.beta_BRANCH }} 分支）至 ${{ env.beta_VERSION }}，发布于 ${{ env.beta_TIME }}
           file_glob: true
           file: ./AdGuardHome/*
