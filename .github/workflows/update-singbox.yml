@@ -123,7 +123,7 @@ jobs:
         run: go build -v -trimpath -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${ref1nd_stable_VERSION}' -s -w -buildid=" -tags "${{ steps.tags.outputs.build_tags }}" ./cmd/sing-box
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: sing-box-ref1nd-stable-${{ matrix.name }}
           path: sing-box*

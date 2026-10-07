@@ -126,7 +126,7 @@ jobs:
         run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${meta_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${meta_TIME}' -s -w -buildid=" -tags "${{ steps.tags.outputs.build_tags }}" -o meta
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mihomo-meta-${{ matrix.name }}
           path: meta*
@@ -239,7 +239,7 @@ jobs:
         run: go build -v -trimpath -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=${alpha_VERSION}' -X 'github.com/metacubex/mihomo/constant.BuildTime=${alpha_TIME}' -s -w -buildid=" -tags "${{ steps.tags.outputs.build_tags }}" -o alpha
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mihomo-alpha-${{ matrix.name }}
           path: alpha*

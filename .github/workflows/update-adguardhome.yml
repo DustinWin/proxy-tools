@@ -120,7 +120,7 @@ jobs:
         run: make SIGN=0 VERBOSE=1 ARCH="${{ matrix.goarch }}" OS="${{ matrix.goos }}" CHANNEL=release VERSION="${{ env.release_VERSION }}" build-release
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: AdGuardHome_release_${{ matrix.name }}
           path: '**/AdGuardHome/AdGuardHome*'
@@ -227,7 +227,7 @@ jobs:
         run: make SIGN=0 VERBOSE=1 ARCH=${{ matrix.goarch }} OS=${{ matrix.goos }} CHANNEL=beta VERSION=${{ env.beta_VERSION }} build-release
 
       - name: Upload files to workspace
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: AdGuardHome_beta_${{ matrix.name }}
           path: '**/AdGuardHome/AdGuardHome*'
